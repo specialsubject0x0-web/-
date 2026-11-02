@@ -237,16 +237,23 @@ function crm(){if(!P.length)return;
  const st=CRMD&&CRMD.opps&&CRMD.opps[0]?`<div class="hint">🔗 CRM 連線正常；CRM 回傳的範例商機：<b>交接不斷線－離職人員工作交接表</b>。CRM 的 API 僅支援單筆查詢，完整清單以 BizForm 交接單為準。</div>`:'<div class="hint">資料來源：BizForm 交接單（商機／專案明細）。</div>';
  $('crmT').innerHTML=st+'<table><tr><th>商機／專案</th><th>客戶</th><th>進度</th><th>截止日</th><th>移交人 → 接交人</th><th>風險</th></tr>'+r.map(x=>{const lt=x.d!==null&&x.d<0&&x.pc<100;return `<tr><td><b>${esc(x.n)}</b><br><small style="color:var(--mu)">下一步：${esc(x.nx||'—')}</small></td><td>${esc(x.c)}</td><td style="min-width:110px"><div class="bar"><i style="width:${x.pc}%"></i></div><small>${x.pc}%</small></td><td>${esc(x.dd||'—')}${lt?' <span class="chip c-late">逾期</span>':''}</td><td>${esc(x.p.name)} → ${esc(x.p.recv)}</td><td>${esc(x.r&&x.r!=='無'?x.r:'—')}</td></tr>`}).join('')+'</table>';
  fetch('/api/crm?debug=1').then(r=>r.json()).then(j=>$('crmRaw').textContent=JSON.stringify(j.sample,null,1)).catch(()=>{});}
+let LASTSIG='',TICKING=false;const fmtT=t=>new Date(t).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+async function tick(){if(document.hidden||TICKING||!LASTSIG)return;TICKING=true;
+ try{const j=await fetch('/api/handovers?refresh=1',{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject(new Error(r.status)));const sig=JSON.stringify(j.people);
+  if(sig!==LASTSIG){LASTSIG=sig;P=prep(j.people);dash();list();proj();crm();}
+  const d=$('sd'),n=$('sn'),t=$('stm');if(d)d.style.color='var(--grn)';if(n)n.textContent=P.length;if(t)t.textContent=fmtT(j.syncedAt)}
+ catch(e){const d=$('sd');if(d)d.style.color='var(--red)'}
+ TICKING=false}
 async function loadAll(){const s=$('sync');
- try{const j=await fetch('/api/handovers?refresh=1').then(async r=>{const j=await r.json();if(!r.ok)throw new Error(j.error);return j});P=prep(j.people);dash();list();proj();crm();
-  s.innerHTML=`<span style="color:var(--grn)">●</span> BizForm 已同步 ${P.length} 張（${new Date(j.syncedAt).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})}）${j.mock?'・示範資料':''}`}
+ try{const j=await fetch('/api/handovers?refresh=1').then(async r=>{const j=await r.json();if(!r.ok)throw new Error(j.error);return j});LASTSIG=JSON.stringify(j.people);P=prep(j.people);dash();list();proj();crm();
+  s.innerHTML=`<span id="sd" style="color:var(--grn)">●</span> BizForm 已同步 <span id="sn">${P.length}</span> 張（<span id="stm">${fmtT(j.syncedAt)}</span>）${j.mock?'・示範資料':''}`}
  catch(e){s.innerHTML=`<span style="color:var(--red)">●</span> BizForm 連線失敗：${esc(e.message)}`}
  try{const r=await fetch('/api/crm?refresh=1');const j=await r.json();if(!r.ok)throw new Error(j.error);CRMD=j;crm();s.innerHTML+=` ｜ <span style="color:var(--grn)">●</span> CRM 已連線`}catch(e){s.innerHTML+=` ｜ <span style="color:var(--red)">●</span> CRM：${esc(e.message)}`}}
 function loadCai(){const H=CFG.caiHost+'/webchat';const ls=(u,cb)=>{const t=document.createElement('script');t.src=u+'?_='+Date.now();t.onload=()=>cb&&cb();document.head.appendChild(t)};
  window.onCaiWebChatLoaded=()=>{try{CaiWebChat.init({botId:CFG.caiBot})}catch(e){}};ls(H+'/caiwebchat-config.js',()=>ls(H+'/caiwebchat-loader.js'))}
-async function enter(){$('login').style.display='none';$('app').style.display='block';$('un').textContent=$('lu').value||'展示使用者';$('ur').textContent=$('lr').value;go();
+async function enter(){$('login').style.display='none';$('app').style.display='block';$('un').textContent=$('lu').value||'展示使用者';$('ur').textContent=$('lr').value;if(location.hash!=='#dash')location.hash='#dash';go();
  $('biA').href=CFG.powerbi;$('newA').href=CFG.formUrl;try{new QRCode($('qr'),{text:CFG.formUrl,width:110,height:110})}catch(e){$('qr').textContent='QR'}
- loadAll();loadCai();setInterval(loadAll,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadAll()})}
+ go();loadAll();if(window.__iv)return;window.__iv=1;loadCai();setInterval(tick,5000);setInterval(()=>{fetch('/api/crm?refresh=1').then(r=>r.json()).then(j=>{if(j&&j.opps){CRMD=j;crm()}}).catch(()=>{})},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadAll()})}
 $('lf').onsubmit=async e=>{e.preventDefault();if(CFG.needLogin){const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:$('lc').value})});if(!r.ok){$('le').textContent='存取碼錯誤';return}}enter()};
 $('lo').onclick=()=>{$('app').style.display='none';$('login').style.display='flex';};
 fetch('/api/config').then(r=>r.json()).then(c=>{CFG=c;if(c.needLogin)$('lcw').style.display='block'});

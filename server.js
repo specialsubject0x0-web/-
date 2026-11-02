@@ -24,19 +24,30 @@ function shape(g){
   else if('單位名稱' in m)P.cust.push({n:m['單位名稱'],c:m['聯絡人／職稱'],t:m['類別']});
   else if('未結事項' in m)P.risk.push({n:m['未結事項'],l:m['風險等級'],o:m['負責人'],d:m['追蹤日期']});}
  return P;}
-let cache={t:0,data:null};
-async function load(force){
- if(!force&&cache.data&&Date.now()-cache.t<5000)return cache.data;
+let cache={t:0,data:null},inflight=null,nextOk=0;const rows=new Map();
+async function sync(){
  let list;
  if(MOCK)list=JSON.parse(fs.readFileSync(path.join(__dirname,'data/mock.json'),'utf8'));
  else{
   if(!E.BIZFORM_API_KEY)throw new Error('尚未設定 BIZFORM_API_KEY');
   const q=await bf('/documents/query',{method:'POST',body:JSON.stringify({formId:CFG.formId,pageIndex:0,pageSize:200})});
   const items=Array.isArray(q)?q:(q.items||q.documents||Object.values(q).filter(x=>x&&x.id));
-  list=await pool(items,5,async d=>shape(await bf('/documents/'+d.id)));
+  const now=Date.now(),seen=new Set(),todo=[];
+  for(const d of items){seen.add(d.id);const sig=JSON.stringify(d),r=rows.get(d.id);if(!r||r.sig!==sig||now-r.t>60000)todo.push([d,sig]);}
+  for(const k of [...rows.keys()])if(!seen.has(k))rows.delete(k);
+  await pool(todo,3,async([d,sig])=>{rows.set(d.id,{sig,t:Date.now(),p:shape(await bf('/documents/'+d.id))})});
+  list=items.map(d=>rows.get(d.id)&&rows.get(d.id).p).filter(Boolean);
  }
  list=list.map(p=>({risk:[],proj:[],cust:[],...p})).filter(p=>p.name&&!/^\d+$/.test(p.name));
  cache={t:Date.now(),data:{syncedAt:new Date().toISOString(),mock:MOCK,people:list}};return cache.data;}
+async function load(force){
+ const now=Date.now(),age=now-cache.t;
+ if(cache.data&&age<(force?1500:4000))return cache.data;
+ if(cache.data&&now<nextOk)return {...cache.data,stale:true};
+ if(!inflight)inflight=sync().then(d=>{nextOk=0;return d}).finally(()=>{inflight=null});
+ try{return await inflight}catch(e){
+  if(cache.data){nextOk=Date.now()+(/ 429 /.test(e.message)?60000:15000);return {...cache.data,stale:true}}
+  throw e}}
 
 // ---- Vital CRM（Authorization: ApiKey <金鑰>；路徑 /{服務識別碼}/api/<資源>）----
 const CRM={base:(E.CRM_BASE||'https://crm.vitalyun.com').replace(/\/$/,''),id:E.CRM_SERVICE_ID||'e1771937af72548c58e0f5ae0aa75397',key:E.CRM_API_KEY||''};

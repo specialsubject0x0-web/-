@@ -86,7 +86,6 @@ http.createServer(async(req,res)=>{
   if(u.pathname.startsWith('/api/')&&!authed(req))return send(res,401,{error:'請先登入'});
   if(u.pathname==='/api/handovers'){try{return send(res,200,await load(u.searchParams.get('refresh')==='1'));}catch(e){return send(res,502,{error:e.message});}}
   if(u.pathname==='/api/crm'){try{const d=await loadCrm(u.searchParams.get('refresh')==='1');return send(res,200,{syncedAt:new Date().toISOString(),...d,sample:u.searchParams.get('debug')==='1'?d.sample:undefined});}catch(e){return send(res,502,{error:e.message});}}
-  if(u.pathname==='/api/crm/raw'){try{const rs=String(u.searchParams.get('res')||'opportunities').replace(/[^a-z]/gi,'');const q=u.searchParams.get('q')||'';const r=await fetch(`${CRM.base}/${CRM.id}/api/${rs}${q}`,{headers:{Authorization:'ApiKey '+CRM.key,Accept:'application/json'}});const t=await r.text();return send(res,200,{status:r.status,length:t.length,head:t.slice(0,3500)});}catch(e){return send(res,502,{error:e.message});}}
   if(u.pathname==='/api/chat'&&req.method==='POST'){const b=await body(req);return send(res,200,await chat(String(b.q||'').slice(0,500),String(b.sid||'web')));}
   let f=path.join(__dirname,'public',u.pathname==='/'?'index.html':u.pathname);
   if(!f.startsWith(path.join(__dirname,'public'))||!fs.existsSync(f)||fs.statSync(f).isDirectory()){res.writeHead(404);return res.end('Not found');}

@@ -23,7 +23,9 @@ button{font:inherit;cursor:pointer}a{color:inherit}
 aside{position:sticky;top:0;height:64px;background:var(--navy);color:#cbd5e1;display:flex;flex-direction:row;align-items:center;gap:18px;padding:0 24px;z-index:6;box-shadow:0 2px 12px #0004}
 .logo{color:#fff;font-size:18px;font-weight:700;white-space:nowrap;flex-shrink:0}.logo small{display:none}
 nav{flex:1;min-width:0;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}nav a{display:flex;gap:6px;align-items:center;padding:8px 11px;border-radius:99px;text-decoration:none;color:#cbd5e1;white-space:nowrap;font-size:13.5px}
-nav a:hover{background:var(--navy2)}nav a.on{background:var(--org);color:#fff;font-weight:600}
+nav a:hover{background:var(--navy2)}nav a.on{background:var(--org);color:#fff;font-weight:600}.rd{display:none;min-width:9px;height:9px;border-radius:99px;background:#ef4444;box-shadow:0 0 0 2px var(--navy),0 0 8px #ef4444;animation:pl 1.6s infinite}.rd.on{display:inline-block}@keyframes pl{50%{transform:scale(1.35)}}
+.mini{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:13px}.mini:last-child{border:0}.mini small{color:var(--mu)}.g3{grid-template-columns:repeat(3,1fr)}@media(max-width:1100px){.g3{grid-template-columns:1fr 1fr}}@media(max-width:900px){.g3{grid-template-columns:1fr}}
+.new{background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:99px;margin-right:4px;font-weight:700}
 .user{flex-shrink:0;display:flex;align-items:center;gap:12px;background:var(--navy2);border-radius:99px;padding:6px 8px 6px 16px;font-size:11px;white-space:nowrap}.user b{color:#fff;font-size:13px;display:block}.user button{background:transparent;border:1px solid #475569;color:#cbd5e1;border-radius:99px;padding:5px 14px;font-size:12px}
 main{min-height:100vh}
 .top{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:var(--card);border-bottom:1px solid var(--bd);position:sticky;top:64px;z-index:4;gap:12px;flex-wrap:wrap}
@@ -48,8 +50,9 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px
 .ci{display:flex;gap:8px;padding:10px;border-top:1px solid var(--bd)}.ci input{flex:1}
 .fab{position:fixed;left:24px;bottom:22px;z-index:8;display:flex;align-items:center;gap:10px}
 .fab .bub{background:var(--card);border:1px solid var(--bd);padding:8px 12px;border-radius:12px;font-size:12px;box-shadow:0 4px 14px #0002}
-.fab button{width:56px;height:56px;border-radius:50%;background:var(--navy);color:#fff;border:0;font-size:26px;box-shadow:0 4px 14px #0004}
-#pop{display:none;position:fixed;left:24px;bottom:92px;width:370px;max-width:calc(100vw - 30px);z-index:9;background:var(--card);border:1px solid var(--bd);border-radius:14px;box-shadow:0 10px 30px #0004;overflow:hidden}
+.fab button{cursor:inherit;width:56px;height:56px;border-radius:50%;background:var(--navy);color:#fff;border:0;font-size:26px;box-shadow:0 4px 14px #0004}
+#dock{position:fixed;left:24px;bottom:22px;z-index:9;display:flex;flex-direction:column;align-items:flex-start;gap:10px;touch-action:none}#dock .fab{position:static;cursor:grab;user-select:none;touch-action:none}#dock.drag,#dock.drag .fab{cursor:grabbing}#dock.drag{filter:drop-shadow(0 8px 18px #0005)}
+#pop{display:none;position:static;width:370px;max-width:calc(100vw - 30px);background:var(--card);border:1px solid var(--bd);border-radius:14px;box-shadow:0 10px 30px #0004;overflow:hidden}
 #pop .h{background:var(--navy);color:#fff;padding:12px 14px;cursor:move;user-select:none;touch-action:none;display:flex;justify-content:space-between;align-items:center}#pop .h .x{background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer;padding:0 4px}#pop .h small{display:block;opacity:.65;font-size:11px}
 #pop .chat{border:0;border-radius:0;height:330px}
 .kn{border-left:4px solid var(--org);padding:4px 12px;margin:10px 0}
@@ -77,9 +80,11 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px
 <main>
 <div class="top"><h2 id="pt">總覽儀表板</h2><div class="r"><span id="sync" style="font-size:12px"></span><button class="btn sm" id="rf">重新整理</button></div></div>
 <div class="pg">
-<section id="s-dash"><div class="grid g4" id="kpis"></div>
+<section id="s-dash"><div class="grid g4" id="kpis"></div><div class="grid g4" id="kpis2" style="margin-top:16px"></div>
  <div class="card late" style="margin-top:16px"><h3>🔔 逾期與即將到期提醒</h3><div style="overflow:auto"><table id="alertT"></table></div></div>
- <div class="grid g2" style="margin-top:16px"><div class="card"><h3>各部門交接狀況</h3><div id="deptC"></div></div><div class="card"><h3>狀態分布</h3><div id="stC"></div></div></div></section>
+ <div class="grid g2" style="margin-top:16px"><div class="card"><h3>各部門交接狀況</h3><div id="deptC"></div></div><div class="card"><h3>狀態分布</h3><div id="stC"></div></div></div>
+ <div class="grid g3" style="margin-top:16px"><div class="card"><h3>⏳ 即將離職時程（45 天內）</h3><div id="timeC"></div></div><div class="card"><h3>🗂️ 最近截止的待辦案件</h3><div id="pjC"></div></div><div class="card"><h3>⚠️ 未結風險事項</h3><div id="riskC"></div></div></div>
+ <div class="grid g3" style="margin-top:16px"><div class="card"><h3>👥 接交人承接排行</h3><div id="recvC"></div></div><div class="card"><h3>離職原因分布</h3><div id="reasonC"></div></div><div class="card"><h3>7 大項確認完成分布</h3><div id="ckC"></div></div></div></section>
 
 <section id="s-crm"><div class="grid g4" id="crmK"></div><div class="card" style="margin-top:16px;overflow:auto"><h3>💼 商機與案件（BizForm 即時）</h3><div id="crmT"></div></div><details class="hint"><summary>欄位檢查（除錯用）</summary><pre id="crmRaw" style="white-space:pre-wrap"></pre></details></section>
 
@@ -108,8 +113,7 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px
 <section id="s-note"><div class="card"><h3>🔔 通知</h3><div id="notes"></div></div></section>
 </div></main>
 
-<div class="fab"><div class="bub">BizForm 快查</div><button id="fb" title="交接小幫手">🤖</button></div>
-<div id="pop"><div class="h" id="popH"><span><b>交接小幫手</b><small>查交接進度・客戶知識卡・案件　<i style="font-style:normal;opacity:.7">（可拖曳移動）</i></small></span><button class="x" id="popX" title="收合">✕</button></div><div id="popBox"></div></div>
+<div id="dock"><div id="pop"><div class="h" id="popH"><span><b>交接小幫手</b><small>查交接進度・客戶知識卡・案件　<i style="font-style:normal;opacity:.7">（可拖曳移動）</i></small></span><button class="x" id="popX" title="收合">✕</button></div><div id="popBox"></div></div><div class="fab"><div class="bub">BizForm 快查</div><button id="fb" title="交接小幫手">🤖</button></div></div>
 <div class="tg" id="tg"></div>
 </div>
 
@@ -123,10 +127,14 @@ const CL={'已完成':'c-done','進行中':'c-go','即將到期':'c-soon','逾�
 const chip=s=>`<span class="chip ${CL[s]}">${s}</span>`;
 const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const PAGES=[['dash','📊','總覽儀表板'],['crm','💼','CRM 商機'],['bi','📈','Power BI 分析'],['new','📝','我要開交接單'],['list','📋','交接管理'],['proj','🗂️','案件進度'],['cust','📇','客戶知識卡'],['ai','🤖','問交接小幫手'],['note','🔔','通知']];
-$('nav').innerHTML=PAGES.map(p=>`<a href="#${p[0]}" data-p="${p[0]}">${p[1]} ${p[2]}</a>`).join('');
+$('nav').innerHTML=PAGES.map(p=>`<a href="#${p[0]}" data-p="${p[0]}">${p[1]} ${p[2]}${p[0]==='note'?'<i class="rd" id="rd" title="有新通知"></i>':''}</a>`).join('');
+let SEEN=null;const seenGet=()=>{if(SEEN)return SEEN;try{SEEN=new Set(JSON.parse(localStorage.getItem('ho_seen')||'[]'))}catch(e){SEEN=new Set()}return SEEN};
+const seenSave=()=>{try{localStorage.setItem('ho_seen',JSON.stringify([...SEEN]))}catch(e){}};let NK=[];
+function dot(){const n=NK.filter(k=>!seenGet().has(k)).length;const d=$('rd');if(d){d.classList.toggle('on',n>0);d.title=n?n+' 則新通知':''}}
+function markSeen(){if(!NK.length)return;NK.forEach(k=>seenGet().add(k));seenSave();dot()}
 function go(){const h=(location.hash||'#dash').slice(1);const pg=PAGES.find(p=>p[0]===h)||PAGES[0];if(pg[0]==='bi'&&!$('biF').src)$('biF').src=CFG.powerbi;
  document.querySelectorAll('.pg>section').forEach(s=>s.classList.toggle('on',s.id==='s-'+pg[0]));
- document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.p===pg[0]));$('pt').textContent=pg[2];}
+ document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.p===pg[0]));$('pt').textContent=pg[2];if(pg[0]==='note')markSeen();}
 addEventListener('hashchange',go);
 const cnt=s=>P.filter(p=>p.st===s).length;
 function dash(){
@@ -141,8 +149,24 @@ function dash(){
  const st={};['進行中','即將到期','逾期未完成','已完成'].forEach(s=>st[s]=cnt(s));
  $('stC').innerHTML=Object.entries(st).map(([a,b])=>`<div style="display:flex;gap:10px;align-items:center;margin:9px 0">${chip(a)}<div class="bar" style="flex:1"><i style="width:${b/n*100}%"></i></div><b>${b}</b></div>`).join('');
  
+ NK=al.map(p=>p.id+':'+p.st);
+ const isNote=(location.hash||'')==='#note';
+ const k2=[['逾期專案',P.flatMap(p=>p.proj).filter(x=>x.d&&dt(x.d)<TODAY&&(+x.p||0)<100).length,'截止日已過、未達 100%'],['風險事項',P.reduce((a,p)=>a+p.risk.length,0),'未結事項合計'],['客戶窗口',P.reduce((a,p)=>a+p.cust.length,0),'待移轉'],['未完成平均剩餘',(()=>{const o=P.filter(p=>p.st!=='已完成');return o.length?Math.round(o.reduce((a,p)=>a+p.days,0)/o.length)+' 天':'—'})(),'距最後工作日']];
+ $('kpis2').innerHTML=k2.map(x=>`<div class="card kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${x[2]}</div></div>`).join('');
+ const hb=(o,max)=>Object.entries(o).map(([a,b])=>`<div style="display:flex;gap:10px;align-items:center;margin:7px 0"><span style="width:96px;font-size:13px">${esc(a)}</span><div class="bar" style="flex:1"><i style="width:${b/max*100}%"></i></div><b>${b}</b></div>`).join('')||'<small>無資料</small>';
+ const rs={};P.forEach(p=>{const r=p.reason||'未填';rs[r]=(rs[r]||0)+1});$('reasonC').innerHTML=hb(rs,Math.max(...Object.values(rs),1));
+ const ck={};for(let i=0;i<=7;i++)ck[i+' 項']=P.filter(p=>p.ck===i).length;$('ckC').innerHTML=hb(ck,Math.max(...Object.values(ck),1));
+ const rv={};P.forEach(p=>{const r=p.recv||'未填';(rv[r]=rv[r]||{n:0,pj:0});rv[r].n++;rv[r].pj+=p.proj.length});
+ $('recvC').innerHTML=Object.entries(rv).sort((a,b)=>b[1].n-a[1].n||b[1].pj-a[1].pj).slice(0,6).map(([a,b])=>`<div class="mini"><span><b>${esc(a)}</b></span><span>${b.n} 人交接・${b.pj} 案件</span></div>`).join('')||'<small>無資料</small>';
+ const tl=P.filter(p=>p.st!=='已完成'&&p.days>=0&&p.days<=45).sort((a,b)=>a.days-b.days).slice(0,7);
+ $('timeC').innerHTML=tl.map(p=>`<div class="mini"><span><b>${esc(p.name)}</b> <small>${esc(p.dept)}</small></span><span>${esc(p.last)}　<small>剩 ${p.days} 天</small></span></div>`).join('')||'<small>45 天內沒有即將離職的人</small>';
+ const pj=P.flatMap(p=>p.proj.map(x=>({...x,o:p,dd:x.d,d:x.d?Math.round((dt(x.d)-TODAY)/864e5):null}))).filter(x=>x.d!==null&&(+x.p||0)<100).sort((a,b)=>a.d-b.d).slice(0,6);
+ $('pjC').innerHTML=pj.map(x=>`<div class="mini"><span><b>${esc(x.n)}</b><br><small>${esc(x.o.name)} → ${esc(x.o.recv)}・${Math.min(100,+x.p||0)}%</small></span><span style="white-space:nowrap">${x.d<0?'<span class="chip c-late">逾期 '+(-x.d)+' 天</span>':'<small>剩 '+x.d+' 天</small>'}</span></div>`).join('')||'<small>無待辦案件</small>';
+ const rk=P.flatMap(p=>p.risk.map(x=>({...x,o:p}))).filter(x=>x.n).sort((a,b)=>(/高/.test(b.l||'')?1:0)-(/高/.test(a.l||'')?1:0)).slice(0,6);
+ $('riskC').innerHTML=rk.map(x=>`<div class="mini"><span>${/高/.test(x.l||'')?'🔴':'🟠'} <b>${esc(x.n)}</b><br><small>${esc(x.o.name)}・負責 ${esc(x.o.recv||x.o_||'')}${x.d?'・追蹤 '+esc(x.d):''}</small></span><small>${esc(x.l||'')}</small></div>`).join('')||'<small>目前沒有未結風險事項 🎉</small>';
  $('latest').innerHTML=[...P].sort((a,b)=>b.id-a.id).slice(0,6).map(p=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd)"><span><b>${p.name}</b> → ${p.recv}<br><small style="color:var(--mu)">${p.dept}｜最後工作日 ${p.last}</small></span>${chip(p.st)}</div>`).join('');
- $('notes').innerHTML=al.map(p=>`<div style="padding:10px 0;border-bottom:1px solid var(--bd)">${p.st==='逾期未完成'?'🔴':'🟠'} <b>${p.name}</b> 的交接${p.days<0?'已逾期 '+(-p.days)+' 天':'剩 '+p.days+' 天'}，目前完成度 ${p.pct}%，接交人 ${p.recv}。</div>`).join('')||'目前沒有通知。';
+ $('notes').innerHTML=al.map(p=>`<div style="padding:10px 0;border-bottom:1px solid var(--bd)">${seenGet().has(p.id+':'+p.st)?'':'<span class="new">NEW</span>'}${p.st==='逾期未完成'?'🔴':'🟠'} <b>${p.name}</b> 的交接${p.days<0?'已逾期 '+(-p.days)+' 天':'剩 '+p.days+' 天'}，目前完成度 ${p.pct}%，接交人 ${p.recv}。</div>`).join('')||'目前沒有通知。';
+ dot();if(isNote)markSeen();
 }
 function list(){const q=$('q').value.trim(),f=$('fs').value;
  const r=P.filter(p=>(!f||p.st===f)&&(!q||[p.name,p.dept,p.recv,p.emp].some(x=>x.includes(q))));
@@ -164,7 +188,7 @@ function remind(n){toast('已標記提醒：'+n+'（展示版不會實際寄信�
 let cur='c';function ai(){mkChat($('chatBox'),cur);}
 
 $('q').oninput=list;$('fs').onchange=list;$('cq').oninput=cust;$('rf').onclick=()=>{loadAll();toast('已重新同步')};
-let popInit=false;$('fb').onclick=()=>{const p=$('pop');p.style.display=p.style.display==='block'?'none':'block';if(!popInit){mkChat($('popBox'),'b');popInit=true;}};
+let popInit=false;$('fb').onclick=()=>{const p=$('pop');p.style.display=p.style.display==='block'?'none':'block';if(window.__dockClamp)__dockClamp();if(!popInit){mkChat($('popBox'),'b');popInit=true;}};
 const CRMBAD=n=>{return '';const k=String(n).slice(0,3);const o=CRMD.opps.filter(x=>String(x.customer).includes(k)),h=(CRMD.customers||[]).concat(CRMD.companies||[]).some(x=>String(x.name).includes(k));return h||o.length?` <span class="chip c-done">CRM 已建檔${o.length?'・'+o.length+' 筆商機':''}</span>`:` <span class="chip c-soon">CRM 未建檔</span>`};
 function crm(){if(!P.length)return;
  const r=P.flatMap(p=>p.proj.map(x=>({...x,p,pc:Math.min(100,+x.p||0),dd:x.d,d:x.d?Math.round((dt(x.d)-TODAY)/864e5):null}))).sort((a,b)=>(a.d??9999)-(b.d??9999));
@@ -187,11 +211,15 @@ $('lf').onsubmit=async e=>{e.preventDefault();if(CFG.needLogin){const r=await fe
 $('lo').onclick=()=>{$('app').style.display='none';$('login').style.display='flex';};
 fetch('/api/config').then(r=>r.json()).then(c=>{CFG=c;if(c.needLogin)$('lcw').style.display='block'});
 
-(function(){const pop=document.getElementById('pop'),h=document.getElementById('popH');let sx,sy,ox,oy,on=false;
+(function(){const dock=document.getElementById('dock'),pop=document.getElementById('pop');let sx,sy,ol,ob,on=false,moved=false,tgt=null;
+ const clamp=()=>{const l=parseFloat(dock.style.left)||24,b=parseFloat(dock.style.bottom)||22;dock.style.left=Math.max(0,Math.min(innerWidth-dock.offsetWidth,l))+'px';dock.style.bottom=Math.max(0,Math.min(innerHeight-dock.offsetHeight,b))+'px'};
+ window.__dockClamp=clamp;addEventListener('resize',clamp);
  document.getElementById('popX').onclick=e=>{e.stopPropagation();pop.style.display='none'};
- h.addEventListener('pointerdown',e=>{if(e.target.id==='popX')return;const r=pop.getBoundingClientRect();pop.style.left=r.left+'px';pop.style.top=r.top+'px';pop.style.bottom='auto';pop.style.right='auto';sx=e.clientX;sy=e.clientY;ox=r.left;oy=r.top;on=true;h.setPointerCapture(e.pointerId)});
- h.addEventListener('pointermove',e=>{if(!on)return;const w=pop.offsetWidth,hh=pop.offsetHeight;pop.style.left=Math.max(0,Math.min(innerWidth-w,ox+e.clientX-sx))+'px';pop.style.top=Math.max(0,Math.min(innerHeight-60,oy+e.clientY-sy))+'px'});
- const end=()=>{on=false};h.addEventListener('pointerup',end);h.addEventListener('pointercancel',end);
+ dock.addEventListener('pointerdown',e=>{if(e.target.closest('#popX,.msgs,.qk,.ci,input,textarea'))return;if(!e.target.closest('.fab,#popH'))return;const r=dock.getBoundingClientRect();ol=r.left;ob=innerHeight-r.bottom;sx=e.clientX;sy=e.clientY;on=true;moved=false;tgt=e.target;});
+ addEventListener('pointermove',e=>{if(!on)return;const dx=e.clientX-sx,dy=e.clientY-sy;if(!moved&&Math.hypot(dx,dy)<5)return;moved=true;dock.classList.add('drag');dock.style.left=Math.max(0,Math.min(innerWidth-dock.offsetWidth,ol+dx))+'px';dock.style.bottom=Math.max(0,Math.min(innerHeight-dock.offsetHeight,ob-dy))+'px'});
+ const end=()=>{if(!on)return;on=false;dock.classList.remove('drag');if(moved){window.__noClick=true;setTimeout(()=>window.__noClick=false,0)}};
+ addEventListener('pointerup',end);addEventListener('pointercancel',end);
+ dock.addEventListener('click',e=>{if(window.__noClick){e.stopPropagation();e.preventDefault()}},true);
 })();
 </script>
 </body>

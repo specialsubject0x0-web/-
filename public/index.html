@@ -81,7 +81,7 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px
  <div class="card late" style="margin-top:16px"><h3>🔔 逾期與即將到期提醒</h3><div style="overflow:auto"><table id="alertT"></table></div></div>
  <div class="grid g2" style="margin-top:16px"><div class="card"><h3>各部門交接狀況</h3><div id="deptC"></div></div><div class="card"><h3>狀態分布</h3><div id="stC"></div></div></div></section>
 
-<section id="s-crm"><div class="grid g4" id="crmK"></div><div class="card" style="margin-top:16px;overflow:auto"><h3>💼 CRM 商機（Vital CRM 即時）</h3><div id="crmT"></div></div><details class="hint"><summary>欄位檢查（除錯用）</summary><pre id="crmRaw" style="white-space:pre-wrap"></pre></details></section>
+<section id="s-crm"><div class="grid g4" id="crmK"></div><div class="card" style="margin-top:16px;overflow:auto"><h3>💼 商機與案件（BizForm 即時）</h3><div id="crmT"></div></div><details class="hint"><summary>欄位檢查（除錯用）</summary><pre id="crmRaw" style="white-space:pre-wrap"></pre></details></section>
 
 <section id="s-bi"><div class="card" style="padding:0;overflow:hidden"><div style="padding:14px 18px;display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">📊 Power BI 分析</h3><a class="btn sm gh" style="text-decoration:none" id="biA" target="_blank" rel="noopener">全螢幕開啟 ↗</a></div>
  <iframe id="biF" title="Power BI" allowfullscreen style="display:block;width:100%;height:min(78vh,720px);border:0"></iframe></div>
@@ -165,13 +165,16 @@ let cur='c';function ai(){mkChat($('chatBox'),cur);}
 
 $('q').oninput=list;$('fs').onchange=list;$('cq').oninput=cust;$('rf').onclick=()=>{loadAll();toast('已重新同步')};
 let popInit=false;$('fb').onclick=()=>{const p=$('pop');p.style.display=p.style.display==='block'?'none':'block';if(!popInit){mkChat($('popBox'),'b');popInit=true;}};
-const CRMBAD=n=>{if(!CRMD)return '';const k=String(n).slice(0,3);const o=CRMD.opps.filter(x=>String(x.customer).includes(k)),h=(CRMD.customers||[]).concat(CRMD.companies||[]).some(x=>String(x.name).includes(k));return h||o.length?` <span class="chip c-done">CRM 已建檔${o.length?'・'+o.length+' 筆商機':''}</span>`:` <span class="chip c-soon">CRM 未建檔</span>`};
-function crm(){if(!CRMD)return;const o=CRMD.opps,tot=o.reduce((a,x)=>a+x.amount,0);
- $('crmK').innerHTML=[['商機數',o.length],['商機總額','NT$ '+tot.toLocaleString()],['客戶數',(CRMD.customers||[]).length],['有商機的客戶',new Set(o.map(x=>x.customer)).size]].map(x=>`<div class="card kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('');
- $('crmT').innerHTML='<table><tr><th>商機</th><th>客戶</th><th>階段</th><th>金額</th><th>負責人</th><th>預計結案</th></tr>'+o.map(x=>`<tr><td><b>${esc(x.name)}</b></td><td>${esc(x.customer)}</td><td>${x.stage?`<span class="chip c-go">${esc(x.stage)}</span>`:''}</td><td>${x.amount?x.amount.toLocaleString():'—'}</td><td>${esc(x.owner)}</td><td>${esc(x.close)}</td></tr>`).join('')+'</table>';
- fetch('/api/crm?debug=1').then(r=>r.json()).then(j=>$('crmRaw').textContent=JSON.stringify(j.sample,null,1)).catch(()=>{});cust()}
+const CRMBAD=n=>{return '';const k=String(n).slice(0,3);const o=CRMD.opps.filter(x=>String(x.customer).includes(k)),h=(CRMD.customers||[]).concat(CRMD.companies||[]).some(x=>String(x.name).includes(k));return h||o.length?` <span class="chip c-done">CRM 已建檔${o.length?'・'+o.length+' 筆商機':''}</span>`:` <span class="chip c-soon">CRM 未建檔</span>`};
+function crm(){if(!P.length)return;
+ const r=P.flatMap(p=>p.proj.map(x=>({...x,p,pc:Math.min(100,+x.p||0),dd:x.d,d:x.d?Math.round((dt(x.d)-TODAY)/864e5):null}))).sort((a,b)=>(a.d??9999)-(b.d??9999));
+ const late=r.filter(x=>x.d!==null&&x.d<0&&x.pc<100).length,soon=r.filter(x=>x.d!==null&&x.d>=0&&x.d<=14&&x.pc<100).length,avg=r.length?Math.round(r.reduce((a,x)=>a+x.pc,0)/r.length):0;
+ $('crmK').innerHTML=[['商機／案件數',r.length],['平均進度',avg+'%'],['14 天內到期',soon],['已逾期',late]].map(x=>`<div class="card kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('');
+ const st=CRMD&&CRMD.opps&&CRMD.opps[0]?`<div class="hint">🔗 CRM 連線正常；CRM 回傳的範例商機：<b>${esc(CRMD.opps[0].name)}</b>（${esc(CRMD.opps[0].owner)}）。CRM 的 API 僅支援單筆查詢，完整清單以 BizForm 交接單為準。</div>`:'<div class="hint">資料來源：BizForm 交接單（商機／專案明細）。</div>';
+ $('crmT').innerHTML=st+'<table><tr><th>商機／專案</th><th>客戶</th><th>進度</th><th>截止日</th><th>移交人 → 接交人</th><th>風險</th></tr>'+r.map(x=>{const lt=x.d!==null&&x.d<0&&x.pc<100;return `<tr><td><b>${esc(x.n)}</b><br><small style="color:var(--mu)">下一步：${esc(x.nx||'—')}</small></td><td>${esc(x.c)}</td><td style="min-width:110px"><div class="bar"><i style="width:${x.pc}%"></i></div><small>${x.pc}%</small></td><td>${esc(x.dd||'—')}${lt?' <span class="chip c-late">逾期</span>':''}</td><td>${esc(x.p.name)} → ${esc(x.p.recv)}</td><td>${esc(x.r&&x.r!=='無'?x.r:'—')}</td></tr>`}).join('')+'</table>';
+ fetch('/api/crm?debug=1').then(r=>r.json()).then(j=>$('crmRaw').textContent=JSON.stringify(j.sample,null,1)).catch(()=>{});}
 async function loadAll(){const s=$('sync');
- try{const j=await fetch('/api/handovers?refresh=1').then(async r=>{const j=await r.json();if(!r.ok)throw new Error(j.error);return j});P=prep(j.people);dash();list();proj();cust();
+ try{const j=await fetch('/api/handovers?refresh=1').then(async r=>{const j=await r.json();if(!r.ok)throw new Error(j.error);return j});P=prep(j.people);dash();list();proj();cust();crm();
   s.innerHTML=`<span style="color:var(--grn)">●</span> BizForm 已同步 ${P.length} 張（${new Date(j.syncedAt).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})}）${j.mock?'・示範資料':''}`}
  catch(e){s.innerHTML=`<span style="color:var(--red)">●</span> BizForm 連線失敗：${esc(e.message)}`}
  try{const r=await fetch('/api/crm?refresh=1');const j=await r.json();if(!r.ok)throw new Error(j.error);CRMD=j;crm();s.innerHTML+=` ｜ <span style="color:var(--grn)">●</span> CRM 已連線`}catch(e){s.innerHTML+=` ｜ <span style="color:var(--red)">●</span> CRM：${esc(e.message)}`}}

@@ -41,17 +41,18 @@ async function load(force){
 // ---- Vital CRM（Authorization: ApiKey <金鑰>；路徑 /{服務識別碼}/api/<資源>）----
 const CRM={base:(E.CRM_BASE||'https://crm.vitalyun.com').replace(/\/$/,''),id:E.CRM_SERVICE_ID||'e1771937af72548c58e0f5ae0aa75397',key:E.CRM_API_KEY||''};
 const pick=(o,ks)=>{if(!o||typeof o!=='object')return '';const m={};for(const k of Object.keys(o))m[k.toLowerCase()]=o[k];for(const k of ks){let v=m[k.toLowerCase()];if(v&&typeof v==='object')v=v.name||v.displayName||v.title||v.value||JSON.stringify(v);if(v!==undefined&&v!==null&&v!=='')return v;}return '';};
+const findArr=j=>{if(Array.isArray(j))return j;if(!j||typeof j!=='object')return [];for(const k of ['items','data','value','results','records','list','rows','opportunities','customers','companies']){const v=j[k];if(Array.isArray(v))return v;if(v&&typeof v==='object'){const r=findArr(v);if(r.length)return r;}}for(const v of Object.values(j))if(Array.isArray(v))return v;return [];};
 async function crmGet(res){
- const out=[];let page=1;
- for(;page<=20;page++){
+ const out=[],seen=new Set();let shape='';
+ for(let page=1;page<=20;page++){
   const r=await fetch(`${CRM.base}/${CRM.id}/api/${res}?page=${page}&pageIndex=${page}&pageSize=100&$top=100`,{headers:{Authorization:'ApiKey '+CRM.key,Accept:'application/json'}});
   if(!r.ok)throw new Error('CRM '+res+' '+r.status+' '+(await r.text()).slice(0,120));
-  const j=await r.json();const arr=Array.isArray(j)?j:(j.items||j.data||j.value||j.results||j.records||[]);
-  out.push(...arr);
-  const total=j.totalCount??j.total??j.totalItems??null;
-  if(!arr.length||arr.length<100||(total!==null&&out.length>=total))break;
+  const j=await r.json();if(page===1)shape=Array.isArray(j)?'array':'object{'+Object.keys(j||{}).join(',')+'}';
+  const arr=findArr(j);let fresh=0;
+  for(const x of arr){const k=JSON.stringify(x);if(!seen.has(k)){seen.add(k);out.push(x);fresh++;}}
+  if(!fresh||arr.length<100)break;
  }
- return out;}
+ out.shape=shape;return out;}
 const normOpp=o=>({id:pick(o,['id','opportunityId']),name:pick(o,['name','title','subject','opportunityName']),customer:pick(o,['customerName','customer','companyName','company','account','accountName','contactName']),stage:pick(o,['statusName','status','stage','stageName','opportunityStatus']),amount:Number(pick(o,['amount','expectedAmount','estimatedAmount','totalAmount','value']))||0,owner:pick(o,['ownerName','owner','salesperson','assignedTo','responsible','createdByName']),close:String(pick(o,['expectedCloseDate','closeDate','estimatedCloseDate','dueDate','endDate'])).slice(0,10),product:pick(o,['productName','product','products']),created:String(pick(o,['createdDate','createdOn','createDate','createdAt'])).slice(0,10)});
 const normCust=o=>({id:pick(o,['id','customerId','companyId']),name:pick(o,['name','fullName','companyName','displayName','customerName']),phone:pick(o,['phone','mobile','telephone','tel','contactPhone']),email:pick(o,['email','mail','emailAddress']),owner:pick(o,['ownerName','owner','salesperson'])});
 let ccache={t:0,data:null};
@@ -60,7 +61,7 @@ async function loadCrm(force){
  if(MOCK){ccache={t:Date.now(),data:{mock:true,opps:[{id:1,name:'宏遠精密 年度維護續約',customer:'宏遠精密工業',stage:'報價中',amount:480000,owner:'王小明',close:'2026-11-20',product:'年度維護'},{id:2,name:'聯晟資訊 ERP 擴充模組',customer:'聯晟資訊',stage:'需求確認',amount:1200000,owner:'王小明',close:'2026-12-05',product:'ERP 模組'}],customers:[{id:1,name:'宏遠精密工業'},{id:2,name:'聯晟資訊'}],companies:[],sample:null}};return ccache.data;}
  if(!CRM.key)throw new Error('尚未設定 CRM_API_KEY');
  const [o,c,co]=await Promise.all([crmGet('opportunities'),crmGet('customers').catch(()=>[]),crmGet('companies').catch(()=>[])]);
- ccache={t:Date.now(),data:{opps:o.map(normOpp),customers:c.map(normCust),companies:co.map(normCust),sample:{opportunity:o[0]||null,customer:c[0]||null,company:co[0]||null}}};return ccache.data;}
+ ccache={t:Date.now(),data:{opps:o.map(normOpp),customers:c.map(normCust),companies:co.map(normCust),sample:{shape:{opportunities:o.shape,customers:c.shape,companies:co.shape},opportunity:o[0]||null,customer:c[0]||null,company:co[0]||null}}};return ccache.data;}
 // 本機快答（C.ai 未設定或失敗時的備援，資料同為即時 BizForm）
 function status(p){const t=new Date();t.setHours(0,0,0,0);const d=Math.round((new Date(p.last.replace(/\//g,'-'))-t)/864e5);return (p.ck===7&&p.sg===3)?'已完成':d<0?'逾期未完成':d<=14?'即將到期':'進行中';}
 function localAnswer(q,list){const by=s=>list.filter(p=>status(p)===s);const hit=list.find(p=>q.includes(p.name));

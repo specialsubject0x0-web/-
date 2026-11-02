@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>交接不斷線｜離職人員工作交接平台</title>
+<style>
+:root{--navy:#1f2a3c;--navy2:#2a374d;--org:#e07b39;--bg:#f4f5f8;--card:#fff;--tx:#1f2937;--mu:#6b7280;--bd:#e5e7eb;--red:#dc2626;--redbg:#fef2f2;--grn:#16a34a;--grnbg:#dcfce7;--blu:#2563eb;--blubg:#dbeafe;--amb:#d97706;--ambbg:#ffedd5}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1521;--card:#1a2233;--tx:#e5e7eb;--mu:#9ca3af;--bd:#2c3649;--redbg:#3b1a1a;--grnbg:#14351f;--blubg:#16294d;--ambbg:#3d2a14}}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--tx);font-size:14px}
+button{font:inherit;cursor:pointer}a{color:inherit}
+#login{display:flex;min-height:100vh}
+.lp{flex:1;background:linear-gradient(160deg,#1f2a3c,#2b3b57);color:#fff;padding:56px;display:flex;flex-direction:column;justify-content:center}
+.lp h1{font-size:34px;margin:0 0 6px}.lp .sub{opacity:.75;margin-bottom:32px}
+.lp li{list-style:none;margin:14px 0;font-size:16px}.lp ul{padding:0}.lp .ft{margin-top:40px;font-size:12px;opacity:.55}
+.rp{flex:1;display:flex;align-items:center;justify-content:center;padding:32px;background:var(--card)}
+.fm{width:100%;max-width:340px}.fm h2{margin:0 0 4px}.fm label{display:block;margin:16px 0 6px;font-size:13px;color:var(--mu)}
+.fm input,.fm select,.in{width:100%;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);font:inherit}
+.btn{background:var(--org);color:#fff;border:0;border-radius:8px;padding:10px 18px;font-weight:600}.btn:hover{filter:brightness(1.07)}
+.btn.sm{padding:5px 10px;font-size:12px}.btn.gh{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+.hint{font-size:12px;color:var(--mu);margin-top:14px}
+#app{display:none}
+aside{position:fixed;left:0;top:0;bottom:0;width:230px;background:var(--navy);color:#cbd5e1;display:flex;flex-direction:column;padding:18px 12px;z-index:5}
+.logo{color:#fff;font-size:19px;font-weight:700;padding:4px 10px}.logo small{display:block;font-size:11px;font-weight:400;opacity:.6;margin-top:2px}
+nav{margin-top:18px;flex:1;overflow:auto}nav a{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:10px;text-decoration:none;margin:2px 0;color:#cbd5e1}
+nav a:hover{background:var(--navy2)}nav a.on{background:var(--org);color:#fff;font-weight:600}
+.user{background:var(--navy2);border-radius:12px;padding:12px;font-size:12px}.user b{color:#fff;font-size:13px;display:block}.user div{display:flex;gap:8px;margin-top:8px}.user button{flex:1;background:transparent;border:1px solid #475569;color:#cbd5e1;border-radius:6px;padding:4px;font-size:12px}
+main{margin-left:230px;min-height:100vh}
+.top{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;background:var(--card);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:4;gap:12px;flex-wrap:wrap}
+.top h2{margin:0;font-size:20px}.top .r{display:flex;gap:12px;align-items:center;color:var(--mu);font-size:13px}
+.pg{padding:24px 28px}.pg>section{display:none}.pg>section.on{display:block}
+.grid{display:grid;gap:16px}.g4{grid-template-columns:repeat(4,1fr)}.g2{grid-template-columns:1fr 1fr}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:18px}
+.kpi .l{color:var(--mu);font-size:13px}.kpi .v{font-size:30px;font-weight:700;margin-top:6px}.kpi .s{font-size:12px;color:var(--mu);margin-top:2px}
+.card h3{margin:0 0 12px;font-size:16px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--bd);vertical-align:middle}th{font-size:12px;color:var(--mu);font-weight:600}
+.late{background:var(--redbg);border-color:#fca5a5}
+.chip{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600}
+.c-done{background:var(--grnbg);color:var(--grn)}.c-go{background:var(--blubg);color:var(--blu)}.c-soon{background:var(--ambbg);color:var(--amb)}.c-late{background:var(--redbg);color:var(--red)}
+.bar{height:8px;background:var(--bd);border-radius:9px;overflow:hidden;min-width:80px}.bar i{display:block;height:100%;background:var(--org)}
+.tools{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}.tools .in{max-width:260px}
+.steps{padding-left:20px;line-height:1.9}
+.tabs{display:flex;gap:6px;margin-bottom:14px}.tabs button{border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:7px 16px;border-radius:99px}.tabs button.on{background:var(--org);color:#fff;border-color:var(--org)}
+.chat{border:1px solid var(--bd);border-radius:12px;height:430px;display:flex;flex-direction:column;overflow:hidden}
+.msgs{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.m{max-width:85%;padding:9px 13px;border-radius:12px;line-height:1.55;white-space:pre-wrap}.m.b{background:var(--bg);align-self:flex-start}.m.u{background:var(--org);color:#fff;align-self:flex-end}
+.qk{display:flex;gap:8px;flex-wrap:wrap;padding:8px 14px}.qk button{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:99px;padding:5px 12px;font-size:12px}
+.ci{display:flex;gap:8px;padding:10px;border-top:1px solid var(--bd)}.ci input{flex:1}
+.fab{position:fixed;left:250px;bottom:22px;z-index:8;display:flex;align-items:center;gap:10px}
+.fab .bub{background:var(--card);border:1px solid var(--bd);padding:8px 12px;border-radius:12px;font-size:12px;box-shadow:0 4px 14px #0002}
+.fab button{width:56px;height:56px;border-radius:50%;background:var(--navy);color:#fff;border:0;font-size:26px;box-shadow:0 4px 14px #0004}
+#pop{display:none;position:fixed;left:250px;bottom:92px;width:370px;max-width:calc(100vw - 30px);z-index:9;background:var(--card);border:1px solid var(--bd);border-radius:14px;box-shadow:0 10px 30px #0004;overflow:hidden}
+#pop .h{background:var(--navy);color:#fff;padding:12px 14px}#pop .h small{display:block;opacity:.65;font-size:11px}
+#pop .chat{border:0;border-radius:0;height:330px}
+.kn{border-left:4px solid var(--org);padding:4px 12px;margin:10px 0}
+.dt{display:none;margin-top:12px;background:var(--bg);border-radius:10px;padding:12px}
+.tg{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 18px;border-radius:99px;display:none;z-index:20}
+@media(max-width:900px){aside{position:static;width:auto;flex-direction:row;overflow:auto;padding:8px}nav{display:flex;margin:0}nav a{white-space:nowrap}.user,.logo small{display:none}main{margin-left:0}.g4{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}.lp{display:none}.pg{padding:14px}table{font-size:12px}}
+</style>
+</head>
+<body>
+<div id="login">
+ <div class="lp"><h1>🤝 交接不斷線</h1><div class="sub">離職人員工作交接管理平台</div>
+  <ul><li>📋 一張表單，完整記錄職務、專案、窗口、帳號、財產</li><li>⏰ 逾期與即將到期交接，自動提醒</li><li>📊 Power BI 儀表板，掌握全公司交接進度</li><li>🤖 交接小幫手，用問的就查得到</li></ul>
+  <div class="ft">資料來源：Vital BizForm 交接表單 ｜ 對話服務：C.ai 交接不斷線 2.0</div></div>
+ <div class="rp"><form class="fm" id="lf"><h2>登入</h2><div style="color:var(--mu)">請選擇身分進入平台</div>
+  <div id="lcw" style="display:none"><label>存取碼</label><input id="lc" type="password" autocomplete="off"><div class="hint" id="le" style="color:var(--red)"></div></div><label>員工編號</label><input id="lu" placeholder="例如 S1021" autocomplete="off">
+  <label>身分</label><select id="lr"><option>HR 管理者</option><option>直屬主管（監交人）</option><option>接交人</option></select>
+  <button class="btn" style="width:100%;margin-top:22px">登入</button>
+  <div class="hint">資料即時來自 BizForm、CRM 與 C.ai。</div></form></div>
+</div>
+
+<div id="app">
+<aside><div class="logo">🤝 交接不斷線<small>離職人員工作交接平台</small></div>
+<nav id="nav"></nav>
+<div class="user"><b id="un">HR 管理者</b><span id="ur"></span><div><button id="lo">登出</button></div></div></aside>
+<main>
+<div class="top"><h2 id="pt">總覽儀表板</h2><div class="r"><span id="sync" style="font-size:12px"></span><button class="btn sm" id="rf">重新整理</button></div></div>
+<div class="pg">
+<section id="s-dash"><div class="grid g4" id="kpis"></div>
+ <div class="card late" style="margin-top:16px"><h3>🔔 逾期與即將到期提醒</h3><div style="overflow:auto"><table id="alertT"></table></div></div>
+ <div class="grid g2" style="margin-top:16px"><div class="card"><h3>各部門交接狀況</h3><div id="deptC"></div></div><div class="card"><h3>狀態分布</h3><div id="stC"></div></div></div></section>
+
+<section id="s-crm"><div class="grid g4" id="crmK"></div><div class="card" style="margin-top:16px;overflow:auto"><h3>💼 CRM 商機（Vital CRM 即時）</h3><div id="crmT"></div></div><details class="hint"><summary>欄位檢查（除錯用）</summary><pre id="crmRaw" style="white-space:pre-wrap"></pre></details></section>
+
+<section id="s-bi"><div class="card" style="padding:0;overflow:hidden"><div style="padding:14px 18px;display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">📊 Power BI 分析</h3><a class="btn sm gh" style="text-decoration:none" id="biA" target="_blank" rel="noopener">全螢幕開啟 ↗</a></div>
+ <iframe id="biF" title="Power BI" allowfullscreen style="display:block;width:100%;height:min(78vh,720px);border:0"></iframe></div>
+ <div class="grid g2" style="margin-top:16px"><div class="card"><h3>報表可回答的問題</h3><ul class="steps"><li>哪個部門的交接最容易逾期？</li><li>簽名與 7 大項確認的完成率？</li><li>各接交人目前承接多少案件？</li></ul></div>
+ <div class="card"><h3>內建快速圖表（BizForm 即時資料）</h3><div id="biC"></div></div></div></section>
+
+<section id="s-new"><div class="grid g2"><div class="card"><h3>填寫 BizForm 交接單</h3>
+ <p>離職人員工作交接由 BizForm 表單進行，送出後本平台會自動納入追蹤。</p>
+ <a class="btn" style="display:inline-block;text-decoration:none" id="newA" target="_blank" rel="noopener">開啟 BizForm 交接單 ↗</a>
+ <div style="display:flex;gap:18px;margin-top:18px;align-items:center"><div id="qr" style="background:#fff;padding:8px;border-radius:8px"></div>
+ <ol class="steps"><li>掃描 QR Code 或點上方按鈕</li><li>填寫基本資料與 7 大項交接內容</li><li>移交人、接交人、監交人三方簽名</li></ol></div>
+ <div class="hint">🔄 表單送出後，本平台重新整理即可看到新交接單。</div></div>
+ <div class="card"><h3>最新交接單</h3><div id="latest"></div></div></div></section>
+
+<section id="s-list"><div class="tools"><input class="in" id="q" placeholder="搜尋姓名、部門、接交人"><select class="in" id="fs" style="max-width:160px"><option value="">全部狀態</option><option>進行中</option><option>即將到期</option><option>逾期未完成</option><option>已完成</option></select></div>
+ <div class="card" style="overflow:auto"><table id="lt"></table></div></section>
+
+<section id="s-proj"><div class="card" style="overflow:auto"><h3>案件進度（來自交接表的進行中專案）</h3><table id="pt2"></table></div></section>
+<section id="s-cust"><div class="tools"><input class="in" id="cq" placeholder="搜尋客戶／窗口"></div><div id="custL"></div></section>
+
+<section id="s-ai"><div class="grid g2"><div class="card"><h3>🔎 BizForm 即時快查</h3><div id="chatBox"></div></div>
+ <div class="card"><h3>兩個小幫手怎麼分工？</h3><p><b>🤖 C.ai 小幫手</b>：點畫面<b>右下角</b>的 C.ai 對話按鈕。可用自然語言問答、查客戶知識卡、匯出交接狀況 Excel。</p><p><b>🔎 BizForm 快查</b>：左側對話框直接以 BizForm 即時資料回答人數、逾期、個人進度。</p><div class="hint">兩者資料都來自 BizForm 交接表。</div></div></div></section>
+
+<section id="s-note"><div class="card"><h3>🔔 通知</h3><div id="notes"></div></div></section>
+</div></main>
+
+<div class="fab"><div class="bub">BizForm 快查</div><button id="fb" title="交接小幫手">🤖</button></div>
+<div id="pop"><div class="h"><b>交接小幫手</b><small>查交接進度・客戶知識卡・案件</small></div><div id="popBox"></div></div>
+<div class="tg" id="tg"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+let P=[],CFG={},CRMD=null;
+const TODAY=new Date();TODAY.setHours(0,0,0,0);
+const dt=s=>s?new Date(s.replace(/\//g,'-')+'T00:00:00'):null;
+function prep(l){l.forEach(p=>{p.pct=Math.round(p.ck/7*100);p.days=Math.round((dt(p.last)-TODAY)/864e5);p.st=(p.ck===7&&p.sg===3)?'已完成':p.days<0?'逾期未完成':p.days<=14?'即將到期':'進行中';});return l}
+const CL={'已完成':'c-done','進行中':'c-go','即將到期':'c-soon','逾期未完成':'c-late'};
+const chip=s=>`<span class="chip ${CL[s]}">${s}</span>`;
+const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const PAGES=[['dash','📊','總覽儀表板'],['crm','💼','CRM 商機'],['bi','📈','Power BI 分析'],['new','📝','我要開交接單'],['list','📋','交接管理'],['proj','🗂️','案件進度'],['cust','📇','客戶知識卡'],['ai','🤖','問交接小幫手'],['note','🔔','通知']];
+$('nav').innerHTML=PAGES.map(p=>`<a href="#${p[0]}" data-p="${p[0]}">${p[1]} ${p[2]}</a>`).join('');
+function go(){const h=(location.hash||'#dash').slice(1);const pg=PAGES.find(p=>p[0]===h)||PAGES[0];if(pg[0]==='bi'&&!$('biF').src)$('biF').src=CFG.powerbi;
+ document.querySelectorAll('.pg>section').forEach(s=>s.classList.toggle('on',s.id==='s-'+pg[0]));
+ document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.p===pg[0]));$('pt').textContent=pg[2];}
+addEventListener('hashchange',go);
+const cnt=s=>P.filter(p=>p.st===s).length;
+function dash(){
+ const n=P.length,avg=Math.round(P.reduce((a,p)=>a+p.pct,0)/n);
+ const k=[['交接總人數',n,'來自 BizForm'],['進行中',cnt('進行中'),''],['即將到期',cnt('即將到期'),'14 天內最後工作日'],['逾期未完成',cnt('逾期未完成'),'需立即處理'],['已完成',cnt('已完成'),'7 大項＋3 簽名'],['平均完成度',avg+'%','7 大項確認'],['簽名齊全率',Math.round(P.filter(p=>p.sg===3).length/n*100)+'%','移交／接交／監交'],['進行中專案',P.reduce((a,p)=>a+p.proj.length,0),'待移轉案件']];
+ $('kpis').innerHTML=k.map(x=>`<div class="card kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${x[2]}</div></div>`).join('');
+ const al=P.filter(p=>p.st==='逾期未完成'||p.st==='即將到期').sort((a,b)=>a.days-b.days);
+ $('alertT').innerHTML='<tr><th>移交人</th><th>部門</th><th>接交人</th><th>狀態</th><th>最後工作日</th><th>完成度</th><th></th></tr>'+al.map(p=>`<tr><td><b>${p.name}</b></td><td>${p.dept}</td><td>${p.recv}</td><td>${chip(p.st)}</td><td>${p.last}（${p.days<0?'已過 '+(-p.days)+' 天':'剩 '+p.days+' 天'}）</td><td>${p.pct}%</td><td><button class="btn sm" onclick="remind('${p.recv}')">🔔 提醒接交人</button></td></tr>`).join('');
+ const dep={};P.forEach(p=>dep[p.dept]=(dep[p.dept]||0)+1);const mx=Math.max(...Object.values(dep));
+ const bars=o=>Object.entries(o).map(([a,b])=>`<div style="display:flex;gap:10px;align-items:center;margin:7px 0"><span style="width:90px">${a}</span><div class="bar" style="flex:1"><i style="width:${b/mx*100}%"></i></div><b>${b}</b></div>`).join('');
+ $('deptC').innerHTML=bars(dep);$('biC').innerHTML=bars(dep);
+ const st={};['進行中','即將到期','逾期未完成','已完成'].forEach(s=>st[s]=cnt(s));
+ $('stC').innerHTML=Object.entries(st).map(([a,b])=>`<div style="display:flex;gap:10px;align-items:center;margin:9px 0">${chip(a)}<div class="bar" style="flex:1"><i style="width:${b/n*100}%"></i></div><b>${b}</b></div>`).join('');
+ 
+ $('latest').innerHTML=[...P].sort((a,b)=>b.id-a.id).slice(0,6).map(p=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd)"><span><b>${p.name}</b> → ${p.recv}<br><small style="color:var(--mu)">${p.dept}｜最後工作日 ${p.last}</small></span>${chip(p.st)}</div>`).join('');
+ $('notes').innerHTML=al.map(p=>`<div style="padding:10px 0;border-bottom:1px solid var(--bd)">${p.st==='逾期未完成'?'🔴':'🟠'} <b>${p.name}</b> 的交接${p.days<0?'已逾期 '+(-p.days)+' 天':'剩 '+p.days+' 天'}，目前完成度 ${p.pct}%，接交人 ${p.recv}。</div>`).join('')||'目前沒有通知。';
+}
+function list(){const q=$('q').value.trim(),f=$('fs').value;
+ const r=P.filter(p=>(!f||p.st===f)&&(!q||[p.name,p.dept,p.recv,p.emp].some(x=>x.includes(q))));
+ $('lt').innerHTML='<tr><th>移交人</th><th>部門／職稱</th><th>接交人</th><th>狀態</th><th>最後工作日</th><th>完成度</th><th></th></tr>'+r.map(p=>`<tr><td><b>${p.name}</b><br><small style="color:var(--mu)">${p.emp}</small></td><td>${p.dept}<br><small style="color:var(--mu)">${p.title}</small></td><td>${p.recv}</td><td>${chip(p.st)}</td><td>${p.last}</td><td style="min-width:110px"><div class="bar"><i style="width:${p.pct}%"></i></div><small>${p.ck}/7 項｜簽名 ${p.sg}/3</small></td><td><button class="btn sm gh" onclick="tgl(${p.id})">明細</button></td></tr><tr id="d${p.id}" style="display:none"><td colspan="7"><div class="dt" style="display:block">監交人：${p.boss||'未填'}｜原因：${p.reason}｜交接期間：${p.start} ～ ${p.end}<br>專案：${p.proj.map(x=>x.n).join('、')||'無'}<br>客戶窗口：${p.cust.map(x=>x.n+'（'+x.c+'）').join('、')||'無'}</div></td></tr>`).join('');}
+function tgl(id){const e=$('d'+id);e.style.display=e.style.display==='none'?'table-row':'none';}
+function proj(){const r=[];P.forEach(p=>p.proj.forEach(x=>{const pc=Math.min(100,+x.p||0),d=x.d?Math.round((dt(x.d)-TODAY)/864e5):null;r.push({...x,pc,d,p:p})}));
+ r.sort((a,b)=>(a.d??9999)-(b.d??9999));
+ $('pt2').innerHTML='<tr><th>案件</th><th>客戶</th><th>進度</th><th>截止日</th><th>移交人 → 接交人</th><th>風險</th></tr>'+r.map(x=>{const late=x.d!==null&&x.d<0&&x.pc<100;return `<tr><td><b>${x.n}</b><br><small style="color:var(--mu)">下一步：${x.nx||'—'}</small></td><td>${x.c}</td><td style="min-width:110px"><div class="bar"><i style="width:${x.pc}%"></i></div><small>${x.pc}%</small></td><td>${x.d||'—'}${late?' <span class="chip c-late">逾期</span>':''}</td><td>${x.p.name} → ${x.p.recv}</td><td>${x.r||'—'}</td></tr>`}).join('');}
+function cust(){const q=$('cq').value.trim(),m={};P.forEach(p=>p.cust.forEach(c=>{(m[c.n]=m[c.n]||{n:c.n,t:c.t,c:c.c,o:[]}).o.push(p)}));
+ $('custL').innerHTML=Object.values(m).filter(c=>!q||c.n.includes(q)||c.c.includes(q)).map(c=>`<div class="card kn" style="margin-bottom:12px"><b>📇 ${c.n}</b>${CRMBAD(c.n)} <small style="color:var(--mu)">${c.t}</small><br>👤 ${c.c}<br>🔁 ${c.o.map(p=>p.name+' → '+p.recv+'（'+p.dept+'）').join('、')}<br>📁 ${c.o.flatMap(p=>p.proj.filter(x=>x.c===c.n||x.n.includes(c.n.slice(0,2)))).map(x=>x.n+' '+x.p+'%').join('、')||'—'}</div>`).join('');}
+async function remoteAns(q){try{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({q,sid:SID})}).then(r=>r.json());return r.text||r.error||'（沒有回覆）'}catch(e){return '連線失敗，請稍後再試。'}}
+const SID='w'+Math.random().toString(36).slice(2,10);
+function mkChat(host,tab){host.innerHTML=`<div class="chat"><div class="msgs"><div class="m b">您好 👋 我是交接小幫手（BizForm 即時查詢）。</div></div><div class="qk"><button>目前交接多少人？</button><button>哪些逾期？</button><button>王小明的交接狀況</button><button>宏遠精密的客戶知識卡</button></div><div class="ci"><input class="in" placeholder="輸入問題…"><button class="btn sm">送出</button></div></div>`;
+ const ms=host.querySelector('.msgs'),inp=host.querySelector('input');
+ const send=async t=>{if(!t.trim())return;ms.insertAdjacentHTML('beforeend',`<div class="m u"></div><div class="m b">思考中…</div>`);const e=ms.querySelectorAll('.m');e[e.length-2].textContent=t;inp.value='';const a=await remoteAns(t);e[e.length-1].textContent=a;ms.scrollTop=1e9;};
+ host.querySelectorAll('.qk button').forEach(b=>b.onclick=()=>send(b.textContent));host.querySelector('.ci button').onclick=()=>send(inp.value);inp.onkeydown=e=>{if(e.key==='Enter')send(inp.value)};}
+function toast(t){const e=$('tg');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',2200);}
+function remind(n){toast('已標記提醒：'+n+'（展示版不會實際寄信）');}
+let cur='c';function ai(){mkChat($('chatBox'),cur);}
+
+$('q').oninput=list;$('fs').onchange=list;$('cq').oninput=cust;$('rf').onclick=()=>{loadAll();toast('已重新同步')};
+let popInit=false;$('fb').onclick=()=>{const p=$('pop');p.style.display=p.style.display==='block'?'none':'block';if(!popInit){mkChat($('popBox'),'b');popInit=true;}};
+const CRMBAD=n=>{if(!CRMD)return '';const k=String(n).slice(0,3);const o=CRMD.opps.filter(x=>String(x.customer).includes(k)),h=(CRMD.customers||[]).concat(CRMD.companies||[]).some(x=>String(x.name).includes(k));return h||o.length?` <span class="chip c-done">CRM 已建檔${o.length?'・'+o.length+' 筆商機':''}</span>`:` <span class="chip c-soon">CRM 未建檔</span>`};
+function crm(){if(!CRMD)return;const o=CRMD.opps,tot=o.reduce((a,x)=>a+x.amount,0);
+ $('crmK').innerHTML=[['商機數',o.length],['商機總額','NT$ '+tot.toLocaleString()],['客戶數',(CRMD.customers||[]).length],['有商機的客戶',new Set(o.map(x=>x.customer)).size]].map(x=>`<div class="card kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('');
+ $('crmT').innerHTML='<table><tr><th>商機</th><th>客戶</th><th>階段</th><th>金額</th><th>負責人</th><th>預計結案</th></tr>'+o.map(x=>`<tr><td><b>${esc(x.name)}</b></td><td>${esc(x.customer)}</td><td>${x.stage?`<span class="chip c-go">${esc(x.stage)}</span>`:''}</td><td>${x.amount?x.amount.toLocaleString():'—'}</td><td>${esc(x.owner)}</td><td>${esc(x.close)}</td></tr>`).join('')+'</table>';
+ fetch('/api/crm?debug=1').then(r=>r.json()).then(j=>$('crmRaw').textContent=JSON.stringify(j.sample,null,1)).catch(()=>{});cust()}
+async function loadAll(){const s=$('sync');
+ try{const j=await fetch('/api/handovers?refresh=1').then(async r=>{const j=await r.json();if(!r.ok)throw new Error(j.error);return j});P=prep(j.people);dash();list();proj();cust();
+  s.innerHTML=`<span style="color:var(--grn)">●</span> BizForm 已同步 ${P.length} 張（${new Date(j.syncedAt).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})}）${j.mock?'・示範資料':''}`}
+ catch(e){s.innerHTML=`<span style="color:var(--red)">●</span> BizForm 連線失敗：${esc(e.message)}`}
+ try{const r=await fetch('/api/crm?refresh=1');const j=await r.json();if(!r.ok)throw new Error(j.error);CRMD=j;crm();s.innerHTML+=` ｜ <span style="color:var(--grn)">●</span> CRM 已連線`}catch(e){s.innerHTML+=` ｜ <span style="color:var(--red)">●</span> CRM：${esc(e.message)}`}}
+function loadCai(){const H=CFG.caiHost+'/webchat';const ls=(u,cb)=>{const t=document.createElement('script');t.src=u+'?_='+Date.now();t.onload=()=>cb&&cb();document.head.appendChild(t)};
+ window.onCaiWebChatLoaded=()=>{try{CaiWebChat.init({botId:CFG.caiBot})}catch(e){}};ls(H+'/caiwebchat-config.js',()=>ls(H+'/caiwebchat-loader.js'))}
+async function enter(){$('login').style.display='none';$('app').style.display='block';$('un').textContent=$('lu').value||'展示使用者';$('ur').textContent=$('lr').value;ai();go();
+ $('biA').href=CFG.powerbi;$('newA').href=CFG.formUrl;try{new QRCode($('qr'),{text:CFG.formUrl,width:110,height:110})}catch(e){$('qr').textContent='QR'}
+ loadAll();loadCai();setInterval(loadAll,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadAll()})}
+$('lf').onsubmit=async e=>{e.preventDefault();if(CFG.needLogin){const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:$('lc').value})});if(!r.ok){$('le').textContent='存取碼錯誤';return}}enter()};
+$('lo').onclick=()=>{$('app').style.display='none';$('login').style.display='flex';};
+fetch('/api/config').then(r=>r.json()).then(c=>{CFG=c;if(c.needLogin)$('lcw').style.display='block'});
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: handover-site
+    runtime: node
+    plan: free
+    buildCommand: echo "no build"
+    startCommand: node server.js
+    envVars:
+      - key: BIZFORM_API_KEY
+        sync: false
+      - key: SITE_PASSCODE
+        sync: false
+      - key: BIZFORM_BASE
+        value: https://bizform.vitalyun.com
+      - key: DEPOT_ID
+        value: 0891fc9e6a5146ee9adc53245f835cd2
+      - key: FORM_ID
+        value: "14"
+      - key: CAI_BOT_ID
+        value: handover_bot_003
+      - key: CRM_API_KEY
+        sync: false
+      - key: CRM_BASE
+        value: https://crm.vitalyun.com
+      - key: CRM_SERVICE_ID
+        value: e1771937af72548c58e0f5ae0aa75397

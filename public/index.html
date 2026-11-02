@@ -47,7 +47,7 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px
 .msgs{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
 .m{max-width:85%;padding:9px 13px;border-radius:12px;line-height:1.55;white-space:pre-wrap}.m.b{background:var(--bg);align-self:flex-start}.m.u{background:var(--org);color:#fff;align-self:flex-end}
 .qk{display:flex;gap:8px;flex-wrap:wrap;padding:8px 14px}.qk button{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:99px;padding:5px 12px;font-size:12px}
-.ci{display:flex;gap:8px;padding:10px;border-top:1px solid var(--bd)}.ci input{flex:1}
+.ci{display:flex;gap:8px;padding:10px;border-top:1px solid var(--bd)}.ci input{flex:1;min-width:0}.mic{font-size:15px;padding:5px 9px}.mic.rec{background:#ef4444;color:#fff;border-color:#ef4444;animation:pl 1s infinite}
 .fab{position:fixed;left:24px;bottom:22px;z-index:8;display:flex;align-items:center;gap:10px}
 .fab .bub{background:var(--card);border:1px solid var(--bd);padding:8px 12px;border-radius:12px;font-size:12px;box-shadow:0 4px 14px #0002}
 .fab button{cursor:inherit;width:56px;height:56px;border-radius:50%;background:var(--navy);color:#fff;border:0;font-size:26px;box-shadow:0 4px 14px #0004}
@@ -55,7 +55,14 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px
 #pop{display:none;position:static;width:370px;max-width:calc(100vw - 30px);background:var(--card);border:1px solid var(--bd);border-radius:14px;box-shadow:0 10px 30px #0004;overflow:hidden}
 #pop .h{background:var(--navy);color:#fff;padding:12px 14px;cursor:move;user-select:none;touch-action:none;display:flex;justify-content:space-between;align-items:center}#pop .h .x{background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer;padding:0 4px}#pop .h small{display:block;opacity:.65;font-size:11px}
 #pop .chat{border:0;border-radius:0;height:330px}
-.kn{border-left:4px solid var(--org);padding:4px 12px;margin:10px 0}
+.dx{padding:16px 18px;background:var(--bg);border-radius:12px;margin:6px 0 10px;text-align:left}.dh{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
+.dg3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}@media(max-width:900px){.dg3{grid-template-columns:1fr}}
+.dc{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px 14px}.dc h4,.sh{margin:0 0 8px;font-size:13.5px}.sh{margin:18px 0 8px}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--bd);font-size:13px}.kv:last-child{border:0}.kv span{color:var(--mu);white-space:nowrap}.kv b{text-align:right;font-weight:600}.kv em{color:var(--mu);font-weight:400}
+.pgl{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:13px}.seg{display:inline-flex;gap:3px}.seg i{width:14px;height:8px;border-radius:3px;background:var(--bd)}.seg i.on{background:var(--org)}.seg i.on.ok{background:#22c55e}
+.tw{overflow:auto;background:var(--card);border:1px solid var(--bd);border-radius:10px}.mt{width:100%;font-size:13px}.em{padding:12px;color:var(--mu);font-size:13px;background:var(--card);border:1px dashed var(--bd);border-radius:10px}
+.pf{display:grid;grid-template-columns:1.2fr 1fr 1.2fr 1.2fr auto;gap:12px;align-items:end}@media(max-width:1100px){.pf{grid-template-columns:1fr 1fr}}@media(max-width:600px){.pf{grid-template-columns:1fr}}
+.pf label{display:block;font-size:12px;color:var(--mu)}.pf label .in{margin-top:4px;color:var(--tx)}.pf .rg{display:flex;gap:8px;align-items:center;margin-top:8px}.pf .rg input{flex:1;accent-color:var(--org)}.pf .bt{display:flex;gap:8px}
 .dt{display:none;margin-top:12px;background:var(--bg);border-radius:10px;padding:12px}
 .tg{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 18px;border-radius:99px;display:none;z-index:20}
 @media(max-width:900px){aside{padding:0 12px;gap:10px}.user span span,.logo{font-size:15px}.top{top:64px;padding:12px 14px}.g4{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}.lp{display:none}.pg{padding:14px}table{font-size:12px}}
@@ -88,7 +95,7 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px
 
 <section id="s-crm"><div class="grid g4" id="crmK"></div><div class="card" style="margin-top:16px;overflow:auto"><h3>💼 商機與案件（BizForm 即時）</h3><div id="crmT"></div></div><details class="hint"><summary>欄位檢查（除錯用）</summary><pre id="crmRaw" style="white-space:pre-wrap"></pre></details></section>
 
-<section id="s-bi"><div class="card" style="padding:0;overflow:hidden"><div style="padding:14px 18px;display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">📊 Power BI 分析</h3><a class="btn sm gh" style="text-decoration:none" id="biA" target="_blank" rel="noopener">全螢幕開啟 ↗</a></div>
+<section id="s-bi"><div class="card" style="padding:0;overflow:hidden"><div style="padding:14px 18px;display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">📊 Power BI Insight</h3><a class="btn sm gh" style="text-decoration:none" id="biA" target="_blank" rel="noopener">全螢幕開啟 ↗</a></div>
  <iframe id="biF" title="Power BI" allowfullscreen style="display:block;width:100%;height:min(78vh,720px);border:0"></iframe></div>
  <div class="grid g2" style="margin-top:16px"><div class="card"><h3>報表可回答的問題</h3><ul class="steps"><li>哪個部門的交接最容易逾期？</li><li>簽名與 7 大項確認的完成率？</li><li>各接交人目前承接多少案件？</li></ul></div>
  <div class="card"><h3>內建快速圖表（BizForm 即時資料）</h3><div id="biC"></div></div></div></section>
@@ -104,16 +111,18 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px
 <section id="s-list"><div class="tools"><input class="in" id="q" placeholder="搜尋姓名、部門、接交人"><select class="in" id="fs" style="max-width:160px"><option value="">全部狀態</option><option>進行中</option><option>即將到期</option><option>逾期未完成</option><option>已完成</option></select></div>
  <div class="card" style="overflow:auto"><table id="lt"></table></div></section>
 
-<section id="s-proj"><div class="card" style="overflow:auto"><h3>案件進度（來自交接表的進行中專案）</h3><table id="pt2"></table></div></section>
-<section id="s-cust"><div class="tools"><input class="in" id="cq" placeholder="搜尋客戶／窗口"></div><div id="custL"></div></section>
-
-<section id="s-ai"><div class="grid g2"><div class="card"><h3>🔎 BizForm 即時快查</h3><div id="chatBox"></div></div>
- <div class="card"><h3>兩個小幫手怎麼分工？</h3><p><b>🤖 C.ai 小幫手</b>：點畫面<b>右下角</b>的 C.ai 對話按鈕。可用自然語言問答、查客戶知識卡、匯出交接狀況 Excel。</p><p><b>🔎 BizForm 快查</b>：左側對話框直接以 BizForm 即時資料回答人數、逾期、個人進度。</p><div class="hint">兩者資料都來自 BizForm 交接表。</div></div></div></section>
-
+<section id="s-proj"><div class="card" style="margin-bottom:16px"><div class="pf">
+ <label>案件<input class="in" id="pf-n" list="dl-n" placeholder="🔍 搜尋或選取案件" autocomplete="off"></label>
+ <label>客戶<input class="in" id="pf-c" list="dl-c" placeholder="🔍 搜尋或選取客戶" autocomplete="off"></label>
+ <label>移交人 → 接交人<input class="in" id="pf-p" list="dl-p" placeholder="🔍 搜尋或選取" autocomplete="off"></label>
+ <label>進度範圍：<b id="pf-rv" style="color:var(--tx)">0% – 100%</b><div class="rg"><input type="range" id="pf-lo" min="0" max="100" step="5" value="0"><input type="range" id="pf-hi" min="0" max="100" step="5" value="100"></div></label>
+ <div class="bt"><button class="btn" id="pf-go">🔍 搜尋</button><button class="btn gh" id="pf-clr">清除</button></div></div>
+ <datalist id="dl-n"></datalist><datalist id="dl-c"></datalist><datalist id="dl-p"></datalist></div>
+ <div class="card" style="overflow:auto"><h3>案件進度（來自交接表的進行中專案）<small id="pf-cnt" style="font-weight:400;color:var(--mu);margin-left:8px"></small></h3><table id="pt2"></table></div></section>
 <section id="s-note"><div class="card"><h3>🔔 通知</h3><div id="notes"></div></div></section>
 </div></main>
 
-<div id="dock"><div id="pop"><div class="h" id="popH"><span><b>交接小幫手</b><small>查交接進度・客戶知識卡・案件　<i style="font-style:normal;opacity:.7">（可拖曳移動）</i></small></span><button class="x" id="popX" title="收合">✕</button></div><div id="popBox"></div></div><div class="fab"><div class="bub">BizForm 快查</div><button id="fb" title="交接小幫手">🤖</button></div></div>
+<div id="dock"><div id="pop"><div class="h" id="popH"><span><b>交接小幫手</b><small>查交接進度・逾期・案件　<i style="font-style:normal;opacity:.7">（可拖曳移動）</i></small></span><button class="x" id="popX" title="收合">✕</button></div><div id="popBox"></div></div><div class="fab"><div class="bub">BizForm 快查</div><button id="fb" title="交接小幫手">🤖</button></div></div>
 <div class="tg" id="tg"></div>
 </div>
 
@@ -126,7 +135,7 @@ function prep(l){l.forEach(p=>{p.pct=Math.round(p.ck/7*100);p.days=Math.round((d
 const CL={'已完成':'c-done','進行中':'c-go','即將到期':'c-soon','逾期未完成':'c-late'};
 const chip=s=>`<span class="chip ${CL[s]}">${s}</span>`;
 const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const PAGES=[['dash','📊','總覽儀表板'],['crm','💼','CRM 商機'],['bi','📈','Power BI 分析'],['new','📝','我要開交接單'],['list','📋','交接管理'],['proj','🗂️','案件進度'],['cust','📇','客戶知識卡'],['ai','🤖','問交接小幫手'],['note','🔔','通知']];
+const PAGES=[['dash','📊','總覽儀表板'],['crm','💼','CRM 商機'],['bi','📈','Power BI Insight'],['new','📝','我要開交接單'],['list','📋','交接管理'],['proj','🗂️','案件進度'],['note','🔔','通知']];
 $('nav').innerHTML=PAGES.map(p=>`<a href="#${p[0]}" data-p="${p[0]}">${p[1]} ${p[2]}${p[0]==='note'?'<i class="rd" id="rd" title="有新通知"></i>':''}</a>`).join('');
 let SEEN=null;const seenGet=()=>{if(SEEN)return SEEN;try{SEEN=new Set(JSON.parse(localStorage.getItem('ho_seen')||'[]'))}catch(e){SEEN=new Set()}return SEEN};
 const seenSave=()=>{try{localStorage.setItem('ho_seen',JSON.stringify([...SEEN]))}catch(e){}};let NK=[];
@@ -169,27 +178,58 @@ function dash(){
  dot();if(isNote)markSeen();
 }
 function list(){const q=$('q').value.trim(),f=$('fs').value;
- const r=P.filter(p=>(!f||p.st===f)&&(!q||[p.name,p.dept,p.recv,p.emp].some(x=>x.includes(q))));
- $('lt').innerHTML='<tr><th>移交人</th><th>部門／職稱</th><th>接交人</th><th>狀態</th><th>最後工作日</th><th>完成度</th><th></th></tr>'+r.map(p=>`<tr><td><b>${p.name}</b><br><small style="color:var(--mu)">${p.emp}</small></td><td>${p.dept}<br><small style="color:var(--mu)">${p.title}</small></td><td>${p.recv}</td><td>${chip(p.st)}</td><td>${p.last}</td><td style="min-width:110px"><div class="bar"><i style="width:${p.pct}%"></i></div><small>${p.ck}/7 項｜簽名 ${p.sg}/3</small></td><td><button class="btn sm gh" onclick="tgl(${p.id})">明細</button></td></tr><tr id="d${p.id}" style="display:none"><td colspan="7"><div class="dt" style="display:block">監交人：${p.boss||'未填'}｜原因：${p.reason}｜交接期間：${p.start} ～ ${p.end}<br>專案：${p.proj.map(x=>x.n).join('、')||'無'}<br>客戶窗口：${p.cust.map(x=>x.n+'（'+x.c+'）').join('、')||'無'}</div></td></tr>`).join('');}
-function tgl(id){const e=$('d'+id);e.style.display=e.style.display==='none'?'table-row':'none';}
-function proj(){const r=[];P.forEach(p=>p.proj.forEach(x=>{const pc=Math.min(100,+x.p||0),d=x.d?Math.round((dt(x.d)-TODAY)/864e5):null;r.push({...x,pc,d,p:p})}));
- r.sort((a,b)=>(a.d??9999)-(b.d??9999));
- $('pt2').innerHTML='<tr><th>案件</th><th>客戶</th><th>進度</th><th>截止日</th><th>移交人 → 接交人</th><th>風險</th></tr>'+r.map(x=>{const late=x.d!==null&&x.d<0&&x.pc<100;return `<tr><td><b>${x.n}</b><br><small style="color:var(--mu)">下一步：${x.nx||'—'}</small></td><td>${x.c}</td><td style="min-width:110px"><div class="bar"><i style="width:${x.pc}%"></i></div><small>${x.pc}%</small></td><td>${x.d||'—'}${late?' <span class="chip c-late">逾期</span>':''}</td><td>${x.p.name} → ${x.p.recv}</td><td>${x.r||'—'}</td></tr>`}).join('');}
-function cust(){const q=$('cq').value.trim(),m={};P.forEach(p=>p.cust.forEach(c=>{(m[c.n]=m[c.n]||{n:c.n,t:c.t,c:c.c,o:[]}).o.push(p)}));
- $('custL').innerHTML=Object.values(m).filter(c=>!q||c.n.includes(q)||c.c.includes(q)).map(c=>`<div class="card kn" style="margin-bottom:12px"><b>📇 ${c.n}</b>${CRMBAD(c.n)} <small style="color:var(--mu)">${c.t}</small><br>👤 ${c.c}<br>🔁 ${c.o.map(p=>p.name+' → '+p.recv+'（'+p.dept+'）').join('、')}<br>📁 ${c.o.flatMap(p=>p.proj.filter(x=>x.c===c.n||x.n.includes(c.n.slice(0,2)))).map(x=>x.n+' '+x.p+'%').join('、')||'—'}</div>`).join('');}
+ const r=P.filter(p=>(!f||p.st===f)&&(!q||[p.name,p.dept,p.recv,p.emp,p.boss].some(x=>String(x||'').includes(q))));
+ const dim=(a,n,c)=>'<span class="seg">'+Array.from({length:n},(_,i)=>`<i class="${i<a?'on '+(c||''):''}"></i>`).join('')+'</span>';
+ const kv=(k,v)=>`<div class="kv"><span>${k}</span><b>${v===''||v==null?'<em>未填</em>':esc(v)}</b></div>`;
+ const tbl=(h,rows,empty)=>rows.length?`<div class="tw"><table class="mt"><tr>${h.map(x=>'<th>'+x+'</th>').join('')}</tr>${rows.join('')}</table></div>`:`<div class="em">${empty}</div>`;
+ const det=p=>{const dl=p.days<0?`已過 ${-p.days} 天`:`剩 ${p.days} 天`;
+  const pr=p.proj.map(x=>{const pc=Math.min(100,+x.p||0);return `<tr><td><b>${esc(x.n)}</b></td><td>${esc(x.c||'—')}</td><td style="min-width:100px"><div class="bar"><i style="width:${pc}%"></i></div><small>${pc}%</small></td><td>${esc(x.d||'—')}</td><td>${esc(x.nx||'—')}</td><td>${esc(x.r&&x.r!=='無'?x.r:'—')}</td></tr>`});
+  const cu=p.cust.map(x=>`<tr><td><b>${esc(x.n)}</b></td><td>${esc(x.c||'—')}</td><td>${esc(x.t||'—')}</td></tr>`);
+  const rk=p.risk.map(x=>`<tr><td>${/高/.test(x.l||'')?'🔴':'🟠'} <b>${esc(x.n)}</b></td><td>${esc(x.l||'—')}</td><td>${esc(x.o||'—')}</td><td>${esc(x.d||'—')}</td></tr>`);
+  return `<div class="dx"><div class="dh"><div><b style="font-size:16px">${esc(p.name)}</b> <small>${esc(p.emp)}・${esc(p.dept)}／${esc(p.title)}</small></div><div>${chip(p.st)} <small style="margin-left:6px">最後工作日 ${esc(p.last)}（${dl}）</small></div></div>
+  <div class="dg3">
+   <div class="dc"><h4>👤 基本資料</h4>${kv('員工編號',p.emp)}${kv('部門',p.dept)}${kv('職稱',p.title)}${kv('離職原因',p.reason)}</div>
+   <div class="dc"><h4>🔁 交接資訊</h4>${kv('移交人',p.name)}${kv('接交人',p.recv)}${kv('監交人',p.boss)}${kv('最後工作日',p.last)}${kv('交接期間',(p.start||'—')+' ～ '+(p.end||'—'))}</div>
+   <div class="dc"><h4>✅ 完成度</h4><div class="pgl"><span>交接確認 ${p.ck}/7</span>${dim(p.ck,7,p.ck===7?'ok':'')}</div><div class="bar"><i style="width:${p.pct}%"></i></div><div class="pgl" style="margin-top:12px"><span>簽名 ${p.sg}/3</span>${dim(p.sg,3,p.sg===3?'ok':'')}</div><small style="color:var(--mu)">移交人／接交人／監交人</small><div class="pgl" style="margin-top:12px"><span>案件 ${p.proj.length}・窗口 ${p.cust.length}・風險 ${p.risk.length}</span></div></div>
+  </div>
+  <h4 class="sh">🗂️ 待移轉專案（${p.proj.length}）</h4>${tbl(['專案','客戶','進度','截止日','下一步','風險'],pr,'沒有填寫專案')}
+  <h4 class="sh">📇 客戶窗口（${p.cust.length}）</h4>${tbl(['單位名稱','聯絡人','類型'],cu,'沒有填寫客戶窗口')}
+  <h4 class="sh">⚠️ 未結事項與風險（${p.risk.length}）</h4>${tbl(['未結事項','風險等級','負責人','追蹤日期'],rk,'沒有未結事項')}</div>`};
+ $('lt').innerHTML='<tr><th>移交人</th><th>部門／職稱</th><th>接交人</th><th>狀態</th><th>最後工作日</th><th>完成度</th><th></th></tr>'+(r.map(p=>`<tr><td><b>${esc(p.name)}</b><br><small style="color:var(--mu)">${esc(p.emp)}</small></td><td>${esc(p.dept)}<br><small style="color:var(--mu)">${esc(p.title)}</small></td><td>${esc(p.recv)}</td><td>${chip(p.st)}</td><td>${esc(p.last)}</td><td style="min-width:110px"><div class="bar"><i style="width:${p.pct}%"></i></div><small>${p.ck}/7 項｜簽名 ${p.sg}/3</small></td><td><button class="btn sm gh" onclick="tgl(${p.id},this)">${OPEN.has(p.id)?'收合':'明細'}</button></td></tr><tr id="d${p.id}" style="display:${OPEN.has(p.id)?'table-row':'none'}"><td colspan="7" style="padding:0">${det(p)}</td></tr>`).join('')||'<tr><td colspan="7">沒有符合的資料</td></tr>');}
+const OPEN=new Set();
+function tgl(id,b){const e=$('d'+id),o=e.style.display==='none';e.style.display=o?'table-row':'none';o?OPEN.add(id):OPEN.delete(id);if(b)b.textContent=o?'收合':'明細';}
+function proj(){const all=[];P.forEach(p=>p.proj.forEach(x=>{const pc=Math.min(100,+x.p||0),d=x.d?Math.round((dt(x.d)-TODAY)/864e5):null;all.push({...x,pc,d,dd:x.d,p:p,pp:p.name+' → '+p.recv})}));
+ const uniq=a=>[...new Set(a.filter(Boolean))].sort();const fill=(id,a)=>{const e=$(id);if(e)e.innerHTML=a.map(v=>`<option value="${esc(v)}">`).join('')};
+ fill('dl-n',uniq(all.map(x=>x.n)));fill('dl-c',uniq(all.map(x=>x.c)));fill('dl-p',uniq(all.map(x=>x.pp)));
+ const n=$('pf-n').value.trim(),c=$('pf-c').value.trim(),pp=$('pf-p').value.trim().replace(/\s*[→>-]+\s*/g,' → ');let lo=+$('pf-lo').value,hi=+$('pf-hi').value;if(lo>hi)[lo,hi]=[hi,lo];
+ $('pf-rv').textContent=lo+'% – '+hi+'%';
+ const r=all.filter(x=>(!n||String(x.n).includes(n))&&(!c||String(x.c).includes(c))&&(!pp||x.pp.includes(pp)||x.pp.replace(/ → /g,'').includes(pp.replace(/ → /g,'')))&&x.pc>=lo&&x.pc<=hi);
+ r.sort((a,b)=>(a.d??9999)-(b.d??9999));$('pf-cnt').textContent='共 '+r.length+' / '+all.length+' 筆';
+ $('pt2').innerHTML='<tr><th>案件</th><th>客戶</th><th>進度</th><th>截止日</th><th>移交人 → 接交人</th><th>風險</th></tr>'+(r.map(x=>{const late=x.d!==null&&x.d<0&&x.pc<100;return `<tr><td><b>${esc(x.n)}</b><br><small style="color:var(--mu)">下一步：${esc(x.nx||'—')}</small></td><td>${esc(x.c)}</td><td style="min-width:110px"><div class="bar"><i style="width:${x.pc}%"></i></div><small>${x.pc}%</small></td><td>${esc(x.dd||'—')}${late?' <span class="chip c-late">逾期</span>':''}</td><td>${esc(x.pp)}</td><td>${esc(x.r&&x.r!=='無'?x.r:'—')}</td></tr>`}).join('')||'<tr><td colspan="6">沒有符合的案件</td></tr>');}
+['pf-n','pf-c','pf-p','pf-lo','pf-hi'].forEach(i=>{const e=document.getElementById(i);e.addEventListener('input',()=>P.length&&proj());e.addEventListener('keydown',ev=>{if(ev.key==='Enter')proj()})});
+document.getElementById('pf-go').onclick=()=>proj();
+document.getElementById('pf-clr').onclick=()=>{['pf-n','pf-c','pf-p'].forEach(i=>document.getElementById(i).value='');document.getElementById('pf-lo').value=0;document.getElementById('pf-hi').value=100;proj()};
 async function remoteAns(q){try{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({q,sid:SID})}).then(r=>r.json());return r.text||r.error||'（沒有回覆）'}catch(e){return '連線失敗，請稍後再試。'}}
 const SID='w'+Math.random().toString(36).slice(2,10);
-function mkChat(host,tab){host.innerHTML=`<div class="chat"><div class="msgs"><div class="m b">您好 👋 我是交接小幫手（BizForm 即時查詢）。</div></div><div class="qk"><button>目前交接多少人？</button><button>哪些逾期？</button><button>王小明的交接狀況</button><button>宏遠精密的客戶知識卡</button></div><div class="ci"><input class="in" placeholder="輸入問題…"><button class="btn sm">送出</button></div></div>`;
+function mkChat(host,tab){host.innerHTML=`<div class="chat"><div class="msgs"><div class="m b">您好 👋 我是交接小幫手（BizForm 即時查詢）。</div></div><div class="qk"><button>目前交接多少人？</button><button>哪些逾期？</button><button>王小明的交接狀況</button><button>誰最近要離職？</button></div><div class="ci"><input class="in" placeholder="輸入或按 🎤 說話…"><button class="btn sm gh mic" type="button" title="語音輸入">🎤</button><button class="btn sm send">送出</button></div></div>`;
  const ms=host.querySelector('.msgs'),inp=host.querySelector('input');
  const send=async t=>{if(!t.trim())return;ms.insertAdjacentHTML('beforeend',`<div class="m u"></div><div class="m b">思考中…</div>`);const e=ms.querySelectorAll('.m');e[e.length-2].textContent=t;inp.value='';const a=await remoteAns(t);e[e.length-1].textContent=a;ms.scrollTop=1e9;};
- host.querySelectorAll('.qk button').forEach(b=>b.onclick=()=>send(b.textContent));host.querySelector('.ci button').onclick=()=>send(inp.value);inp.onkeydown=e=>{if(e.key==='Enter')send(inp.value)};}
+ host.querySelectorAll('.qk button').forEach(b=>b.onclick=()=>send(b.textContent));host.querySelector('.send').onclick=()=>send(inp.value);
+ const mic=host.querySelector('.mic'),SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null;
+ mic.onclick=()=>{if(!SR){toast('此瀏覽器不支援語音輸入，請改用 Chrome／Edge');return}
+  if(rec){rec.stop();return}
+  rec=new SR();rec.lang='zh-TW';rec.interimResults=true;rec.continuous=false;let fin='';
+  rec.onstart=()=>{mic.classList.add('rec');inp.placeholder='聆聽中…請說話'};
+  rec.onresult=e=>{let t='';fin='';for(const r of e.results){t+=r[0].transcript;if(r.isFinal)fin+=r[0].transcript}inp.value=t};
+  rec.onerror=e=>{toast(e.error==='not-allowed'||e.error==='service-not-allowed'?'請允許瀏覽器使用麥克風':e.error==='no-speech'?'沒有聽到聲音，請再試一次':'語音輸入失敗：'+e.error)};
+  rec.onend=()=>{mic.classList.remove('rec');inp.placeholder='輸入或按 🎤 說話…';const t=inp.value.trim();rec=null;if(fin.trim()&&t)send(t)};
+  try{rec.start()}catch(e){rec=null}};
+inp.onkeydown=e=>{if(e.key==='Enter')send(inp.value)};}
 function toast(t){const e=$('tg');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',2200);}
 function remind(n){toast('已標記提醒：'+n+'（展示版不會實際寄信）');}
-let cur='c';function ai(){mkChat($('chatBox'),cur);}
 
-$('q').oninput=list;$('fs').onchange=list;$('cq').oninput=cust;$('rf').onclick=()=>{loadAll();toast('已重新同步')};
+$('q').oninput=list;$('fs').onchange=list;$('rf').onclick=()=>{loadAll();toast('已重新同步')};
 let popInit=false;$('fb').onclick=()=>{const p=$('pop');p.style.display=p.style.display==='block'?'none':'block';if(window.__dockClamp)__dockClamp();if(!popInit){mkChat($('popBox'),'b');popInit=true;}};
-const CRMBAD=n=>{return '';const k=String(n).slice(0,3);const o=CRMD.opps.filter(x=>String(x.customer).includes(k)),h=(CRMD.customers||[]).concat(CRMD.companies||[]).some(x=>String(x.name).includes(k));return h||o.length?` <span class="chip c-done">CRM 已建檔${o.length?'・'+o.length+' 筆商機':''}</span>`:` <span class="chip c-soon">CRM 未建檔</span>`};
 function crm(){if(!P.length)return;
  const r=P.flatMap(p=>p.proj.map(x=>({...x,p,pc:Math.min(100,+x.p||0),dd:x.d,d:x.d?Math.round((dt(x.d)-TODAY)/864e5):null}))).sort((a,b)=>(a.d??9999)-(b.d??9999));
  const late=r.filter(x=>x.d!==null&&x.d<0&&x.pc<100).length,soon=r.filter(x=>x.d!==null&&x.d>=0&&x.d<=14&&x.pc<100).length,avg=r.length?Math.round(r.reduce((a,x)=>a+x.pc,0)/r.length):0;
@@ -198,13 +238,13 @@ function crm(){if(!P.length)return;
  $('crmT').innerHTML=st+'<table><tr><th>商機／專案</th><th>客戶</th><th>進度</th><th>截止日</th><th>移交人 → 接交人</th><th>風險</th></tr>'+r.map(x=>{const lt=x.d!==null&&x.d<0&&x.pc<100;return `<tr><td><b>${esc(x.n)}</b><br><small style="color:var(--mu)">下一步：${esc(x.nx||'—')}</small></td><td>${esc(x.c)}</td><td style="min-width:110px"><div class="bar"><i style="width:${x.pc}%"></i></div><small>${x.pc}%</small></td><td>${esc(x.dd||'—')}${lt?' <span class="chip c-late">逾期</span>':''}</td><td>${esc(x.p.name)} → ${esc(x.p.recv)}</td><td>${esc(x.r&&x.r!=='無'?x.r:'—')}</td></tr>`}).join('')+'</table>';
  fetch('/api/crm?debug=1').then(r=>r.json()).then(j=>$('crmRaw').textContent=JSON.stringify(j.sample,null,1)).catch(()=>{});}
 async function loadAll(){const s=$('sync');
- try{const j=await fetch('/api/handovers?refresh=1').then(async r=>{const j=await r.json();if(!r.ok)throw new Error(j.error);return j});P=prep(j.people);dash();list();proj();cust();crm();
+ try{const j=await fetch('/api/handovers?refresh=1').then(async r=>{const j=await r.json();if(!r.ok)throw new Error(j.error);return j});P=prep(j.people);dash();list();proj();crm();
   s.innerHTML=`<span style="color:var(--grn)">●</span> BizForm 已同步 ${P.length} 張（${new Date(j.syncedAt).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})}）${j.mock?'・示範資料':''}`}
  catch(e){s.innerHTML=`<span style="color:var(--red)">●</span> BizForm 連線失敗：${esc(e.message)}`}
  try{const r=await fetch('/api/crm?refresh=1');const j=await r.json();if(!r.ok)throw new Error(j.error);CRMD=j;crm();s.innerHTML+=` ｜ <span style="color:var(--grn)">●</span> CRM 已連線`}catch(e){s.innerHTML+=` ｜ <span style="color:var(--red)">●</span> CRM：${esc(e.message)}`}}
 function loadCai(){const H=CFG.caiHost+'/webchat';const ls=(u,cb)=>{const t=document.createElement('script');t.src=u+'?_='+Date.now();t.onload=()=>cb&&cb();document.head.appendChild(t)};
  window.onCaiWebChatLoaded=()=>{try{CaiWebChat.init({botId:CFG.caiBot})}catch(e){}};ls(H+'/caiwebchat-config.js',()=>ls(H+'/caiwebchat-loader.js'))}
-async function enter(){$('login').style.display='none';$('app').style.display='block';$('un').textContent=$('lu').value||'展示使用者';$('ur').textContent=$('lr').value;ai();go();
+async function enter(){$('login').style.display='none';$('app').style.display='block';$('un').textContent=$('lu').value||'展示使用者';$('ur').textContent=$('lr').value;go();
  $('biA').href=CFG.powerbi;$('newA').href=CFG.formUrl;try{new QRCode($('qr'),{text:CFG.formUrl,width:110,height:110})}catch(e){$('qr').textContent='QR'}
  loadAll();loadCai();setInterval(loadAll,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadAll()})}
 $('lf').onsubmit=async e=>{e.preventDefault();if(CFG.needLogin){const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:$('lc').value})});if(!r.ok){$('le').textContent='存取碼錯誤';return}}enter()};

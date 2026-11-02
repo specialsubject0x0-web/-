@@ -135,7 +135,7 @@ function prep(l){l.forEach(p=>{p.pct=Math.round(p.ck/7*100);p.days=Math.round((d
 const CL={'已完成':'c-done','進行中':'c-go','即將到期':'c-soon','逾期未完成':'c-late'};
 const chip=s=>`<span class="chip ${CL[s]}">${s}</span>`;
 const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const PAGES=[['dash','📊','總覽儀表板'],['crm','💼','CRM 商機'],['bi','📈','Power BI Insight'],['new','📝','我要開交接單'],['list','📋','交接管理'],['proj','🗂️','案件進度'],['note','🔔','通知']];
+const PAGES=[['dash','📊','總覽儀表板'],['new','📝','我要開交接單'],['proj','🗂️','案件進度'],['list','📋','交接管理'],['crm','💼','商機與案件'],['bi','📈','Power BI Insight'],['note','🔔','通知']];
 $('nav').innerHTML=PAGES.map(p=>`<a href="#${p[0]}" data-p="${p[0]}">${p[1]} ${p[2]}${p[0]==='note'?'<i class="rd" id="rd" title="有新通知"></i>':''}</a>`).join('');
 let SEEN=null;const seenGet=()=>{if(SEEN)return SEEN;try{SEEN=new Set(JSON.parse(localStorage.getItem('ho_seen')||'[]'))}catch(e){SEEN=new Set()}return SEEN};
 const seenSave=()=>{try{localStorage.setItem('ho_seen',JSON.stringify([...SEEN]))}catch(e){}};let NK=[];
@@ -234,7 +234,7 @@ function crm(){if(!P.length)return;
  const r=P.flatMap(p=>p.proj.map(x=>({...x,p,pc:Math.min(100,+x.p||0),dd:x.d,d:x.d?Math.round((dt(x.d)-TODAY)/864e5):null}))).sort((a,b)=>(a.d??9999)-(b.d??9999));
  const late=r.filter(x=>x.d!==null&&x.d<0&&x.pc<100).length,soon=r.filter(x=>x.d!==null&&x.d>=0&&x.d<=14&&x.pc<100).length,avg=r.length?Math.round(r.reduce((a,x)=>a+x.pc,0)/r.length):0;
  $('crmK').innerHTML=[['商機／案件數',r.length],['平均進度',avg+'%'],['14 天內到期',soon],['已逾期',late]].map(x=>`<div class="card kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('');
- const st=CRMD&&CRMD.opps&&CRMD.opps[0]?`<div class="hint">🔗 CRM 連線正常；CRM 回傳的範例商機：<b>${esc(CRMD.opps[0].name)}</b>（${esc(CRMD.opps[0].owner)}）。CRM 的 API 僅支援單筆查詢，完整清單以 BizForm 交接單為準。</div>`:'<div class="hint">資料來源：BizForm 交接單（商機／專案明細）。</div>';
+ const st=CRMD&&CRMD.opps&&CRMD.opps[0]?`<div class="hint">🔗 CRM 連線正常；CRM 回傳的範例商機：<b>交接不斷線－離職人員工作交接表</b>。CRM 的 API 僅支援單筆查詢，完整清單以 BizForm 交接單為準。</div>`:'<div class="hint">資料來源：BizForm 交接單（商機／專案明細）。</div>';
  $('crmT').innerHTML=st+'<table><tr><th>商機／專案</th><th>客戶</th><th>進度</th><th>截止日</th><th>移交人 → 接交人</th><th>風險</th></tr>'+r.map(x=>{const lt=x.d!==null&&x.d<0&&x.pc<100;return `<tr><td><b>${esc(x.n)}</b><br><small style="color:var(--mu)">下一步：${esc(x.nx||'—')}</small></td><td>${esc(x.c)}</td><td style="min-width:110px"><div class="bar"><i style="width:${x.pc}%"></i></div><small>${x.pc}%</small></td><td>${esc(x.dd||'—')}${lt?' <span class="chip c-late">逾期</span>':''}</td><td>${esc(x.p.name)} → ${esc(x.p.recv)}</td><td>${esc(x.r&&x.r!=='無'?x.r:'—')}</td></tr>`}).join('')+'</table>';
  fetch('/api/crm?debug=1').then(r=>r.json()).then(j=>$('crmRaw').textContent=JSON.stringify(j.sample,null,1)).catch(()=>{});}
 async function loadAll(){const s=$('sync');

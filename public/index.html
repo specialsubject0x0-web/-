@@ -239,7 +239,7 @@ function crm(){if(!P.length)return;
  fetch('/api/crm?debug=1').then(r=>r.json()).then(j=>$('crmRaw').textContent=JSON.stringify(j.sample,null,1)).catch(()=>{});}
 let LASTSIG='',TICKING=false;const fmtT=t=>new Date(t).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
 async function tick(){if(document.hidden||TICKING||!LASTSIG)return;TICKING=true;
- try{const j=await fetch('/api/handovers?refresh=1',{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject(new Error(r.status)));const sig=JSON.stringify(j.people);
+ try{const j=await fetch('/api/handovers',{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject(new Error(r.status)));const sig=JSON.stringify(j.people);
   if(sig!==LASTSIG){LASTSIG=sig;P=prep(j.people);dash();list();proj();crm();}
   const d=$('sd'),n=$('sn'),t=$('stm');if(d)d.style.color='var(--grn)';if(n)n.textContent=P.length;if(t)t.textContent=fmtT(j.syncedAt)}
  catch(e){const d=$('sd');if(d)d.style.color='var(--red)'}

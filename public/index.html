@@ -142,7 +142,7 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px
  <div class="bt"><button class="btn" id="pf-go">🔍 搜尋</button><button class="btn gh" id="pf-clr">清除</button></div></div>
  <datalist id="dl-n"></datalist><datalist id="dl-c"></datalist><datalist id="dl-p"></datalist></div>
  <div class="card" style="overflow:auto"><h3>案件進度（來自交接表的進行中專案）<small id="pf-cnt" style="font-weight:400;color:var(--mu);margin-left:8px"></small></h3><table id="pt2"></table></div></section>
-<section id="s-note"><div class="card"><h3>🔔 通知</h3><div id="notes"></div></div><div class="card" style="margin-top:16px"><h3>📨 通知發送紀錄</h3><div id="nlog"></div></div></section>
+<section id="s-note"><div class="card"><h3>🔔 通知</h3><div id="notes"></div></div></section>
 </div></main>
 
 <div id="dock"><div id="pop"><div class="h" id="popH"><span><b>交接小幫手</b><small>查交接進度・逾期・案件　<i style="font-style:normal;opacity:.7">（可拖曳移動・拉邊角縮放）</i></small></span><button class="x" id="popX" title="收合">✕</button></div><i class="rz" data-m="h"></i><i class="rz" data-m="w"></i><i class="rz" data-m="wh" title="拖曳調整大小"></i><div id="popBox"></div></div><div class="fab"><div class="bub">BizForm 快查</div><button id="fb" title="交接小幫手">🤖</button></div></div>
@@ -172,7 +172,7 @@ function moveInd(){const a=document.querySelector('nav a.on'),i=$('ind');if(!a||
 addEventListener('resize',()=>{window.__indInit=0;moveInd()});try{document.fonts.ready.then(()=>{window.__indInit=0;moveInd()})}catch(e){}
 function go(){const h=(location.hash||'#dash').slice(1);const pg=PAGES.find(p=>p[0]===h)||PAGES[0];if(pg[0]==='bi'&&!$('biF').src)$('biF').src=CFG.powerbi;
  document.querySelectorAll('.pg>section').forEach(s=>s.classList.toggle('on',s.id==='s-'+pg[0]));
- document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.p===pg[0]));$('pt').textContent=pg[2];if(pg[0]==='note'){markSeen();loadNlog()}moveInd();}
+ document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.p===pg[0]));$('pt').textContent=pg[2];if(pg[0]==='note')markSeen();moveInd();}
 addEventListener('hashchange',go);
 const cnt=s=>P.filter(p=>p.st===s).length;
 const kc=(l,v)=>{const n=parseInt(v);if(l==='逾期未完成'||l==='逾期專案'||l==='已逾期')return n>0?'red':'grn';if(l==='已完成')return n>0?'grn':'';if(l==='簽名齊全率')return n===100?'grn':'';return ''};
@@ -181,7 +181,7 @@ function dash(){
  const k=[['交接總人數',n,'來自 BizForm'],['進行中',cnt('進行中'),''],['即將到期',cnt('即將到期'),'14 天內最後工作日'],['逾期未完成',cnt('逾期未完成'),'需立即處理'],['已完成',cnt('已完成'),'7 大項＋3 簽名'],['平均完成度',avg+'%','7 大項確認'],['簽名齊全率',Math.round(P.filter(p=>p.sg===3).length/n*100)+'%','移交／接交／監交'],['進行中專案',P.reduce((a,p)=>a+p.proj.length,0),'待移轉案件']];
  $('kpis').innerHTML=k.map(x=>`<div class="card kpi"><div class="l">${x[0]}</div><div class="v ${kc(x[0],x[1])}">${x[1]}</div><div class="s">${x[2]}</div></div>`).join('');
  const al=P.filter(p=>p.st==='逾期未完成'||p.st==='即將到期').sort((a,b)=>a.days-b.days);
- $('alertT').innerHTML='<tr><th>移交人</th><th>部門</th><th>接交人</th><th>狀態</th><th>最後工作日</th><th>完成度</th><th></th></tr>'+al.map(p=>`<tr><td><b>${p.name}</b></td><td>${p.dept}</td><td>${p.recv}</td><td>${chip(p.st)}</td><td>${p.last}（${p.days<0?'已過 '+(-p.days)+' 天':'剩 '+p.days+' 天'}）</td><td>${p.pct}%</td><td><button class="btn sm" onclick="remind(${p.id},this)">🔔 提醒接交人</button></td></tr>`).join('');
+ $('alertT').innerHTML='<tr><th>移交人</th><th>部門</th><th>接交人</th><th>狀態</th><th>最後工作日</th><th>完成度</th></tr>'+al.map(p=>`<tr><td><b>${p.name}</b></td><td>${p.dept}</td><td>${p.recv}</td><td>${chip(p.st)}</td><td>${p.last}（${p.days<0?'已過 '+(-p.days)+' 天':'剩 '+p.days+' 天'}）</td><td>${p.pct}%</td></tr>`).join('');
  const dep={};P.forEach(p=>dep[p.dept]=(dep[p.dept]||0)+1);const mx=Math.max(...Object.values(dep));
  const bars=o=>Object.entries(o).map(([a,b])=>`<div style="display:flex;gap:10px;align-items:center;margin:7px 0"><span style="width:90px">${a}</span><div class="bar" style="flex:1"><i style="width:${b/mx*100}%"></i></div><b>${b}</b></div>`).join('');
  $('deptC').innerHTML=bars(dep);$('biC').innerHTML=bars(dep);
@@ -222,8 +222,7 @@ const RSB=x=>{const r=x.max?x.pts/x.max:0;return `<div class="rb"><span>${esc(x.
    <div class="dc"><h4>🚦 交接風險 ${rl(p)}</h4>${p.rs.parts.map(RSB).join('')}</div>
    <div class="dc"><h4>🧱 卡在哪一項</h4><div class="stk">${esc(p.stuck.text)}</div>${p.stuck.items.length?'<div class="chips">'+p.stuck.items.map(x=>`<span class="chip c-late">第 ${x.i} 項${x.t?'・'+esc(x.t):''}</span>`).join('')+'</div>':''}${p.stuck.sig.length?'<div class="chips">'+p.stuck.sig.map(s=>`<span class="chip c-soon">缺 ${esc(s)}</span>`).join('')+'</div>':''}</div>
    <div class="dc"><h4>🧬 單點依賴 ${p.spof.idx}%</h4>${sp.length?`<small style="color:var(--mu)">僅 ${esc(p.name)} 一人記錄的窗口／客戶：</small><ul class="sp" style="margin:6px 0 0;padding-left:18px">${sp.slice(0,5).map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>`:'<small style="color:var(--mu)">沒有只有此人掌握的窗口，風險較低。</small>'}<small style="color:var(--mu);display:block;margin-top:8px">接交人 ${esc(p.recv)} 同時承接 ${p.spof.recvN} 人、${p.spof.recvPj} 案</small></div></div>
-  ${p.loop?`<div class="dc" style="margin-top:12px"><h4>🔄 交接閉環：BizForm 填單 → 簽核 → C.ai 通知 → 儀表板</h4><div class="lpx">${p.loop.map((s,i)=>`<div class="${s.s}"><b>${i+1}. ${esc(s.n)}</b>${s.s==='ok'?'✔ ':s.s==='wait'?'⏳ ':'— '}${esc(s.t)}</div>`).join('')}</div></div>`:''}
-  <div class="acts"><button class="btn sm" onclick="aiAsk(${p.id},'summary',this)">🤖 AI 交接摘要</button><button class="btn sm" onclick="aiAsk(${p.id},'onboard',this)">🧭 新手上路清單</button><a class="btn sm gh" target="_blank" href="/report/${p.id}">📄 匯出報告（PDF）</a><button class="btn sm gh" onclick="remind(${p.id},this)">📧 寄信提醒接交人</button></div>
+  <div class="acts"><button class="btn sm" onclick="aiAsk(${p.id},'summary',this)">🤖 AI 交接摘要</button><button class="btn sm" onclick="aiAsk(${p.id},'onboard',this)">🧭 新手上路清單</button><a class="btn sm gh" target="_blank" href="/report/${p.id}">📄 匯出報告（PDF）</a></div>
   <pre class="aib" id="ai${p.id}" style="display:${AIC[p.id]?'block':'none'}">${esc(AIC[p.id]||'')}</pre>`};
  const det=p=>{const dl=p.days<0?`已過 ${-p.days} 天`:`剩 ${p.days} 天`;
   const pr=p.proj.map(x=>{const pc=Math.min(100,+x.p||0);return `<tr><td><b>${esc(x.n)}</b></td><td>${esc(x.c||'—')}</td><td style="min-width:100px"><div class="bar"><i style="width:${pc}%"></i></div><small>${pc}%</small></td><td>${esc(x.d||'—')}</td><td>${esc(x.nx||'—')}</td><td>${esc(x.r&&x.r!=='無'?x.r:'—')}</td></tr>`});
@@ -323,7 +322,7 @@ async function tick(){if(document.hidden||TICKING||!LASTSIG)return;TICKING=true;
  catch(e){const d=$('sd');if(d)d.style.color='var(--red)'}
  TICKING=false}
 async function loadAll(){const s=$('sync');
- try{const j=await fetch('/api/handovers?refresh=1').then(async r=>{const j=await r.json();if(!r.ok)throw new Error(j.error);return j});LASTSIG=JSON.stringify(j.people);P=prep(j.people);dash();list();proj();crm();loadNlog();
+ try{const j=await fetch('/api/handovers?refresh=1').then(async r=>{const j=await r.json();if(!r.ok)throw new Error(j.error);return j});LASTSIG=JSON.stringify(j.people);P=prep(j.people);dash();list();proj();crm();
   s.innerHTML=`<span id="sd" style="color:var(--grn)">●</span> BizForm 已同步 <span id="sn">${P.length}</span> 張（<span id="stm">${fmtT(j.syncedAt)}</span>）${j.mock?'・示範資料':''}`}
  catch(e){s.innerHTML=`<span style="color:var(--red)">●</span> BizForm 連線失敗：${esc(e.message)}`}
  try{const r=await fetch('/api/crm?refresh=1');const j=await r.json();if(!r.ok)throw new Error(j.error);CRMD=j;crm();s.innerHTML+=` ｜ <span style="color:var(--grn)">●</span> CRM 已連線`}catch(e){s.innerHTML+=` ｜ <span style="color:var(--red)">●</span> CRM：${esc(e.message)}`}}

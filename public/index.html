@@ -108,7 +108,7 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px
  <div class="hint">🔄 表單送出後，本平台重新整理即可看到新交接單。</div></div>
  <div class="card"><h3>最新交接單</h3><div id="latest"></div></div></div></section>
 
-<section id="s-list"><div class="tools"><input class="in" id="q" placeholder="搜尋姓名、部門、接交人"><select class="in" id="fs" style="max-width:160px"><option value="">全部狀態</option><option>進行中</option><option>即將到期</option><option>逾期未完成</option><option>已完成</option></select></div>
+<section id="s-list"><div class="tools"><input class="in" id="q" placeholder="搜尋姓名、部門、接交人"><select class="in" id="fs" style="max-width:160px"><option value="">全部狀態</option><option>進行中</option><option>即將到期</option><option>逾期未完成</option><option>已完成</option></select><button class="btn" id="xl" style="margin-left:auto">📥 下載 Excel</button></div>
  <div class="card" style="overflow:auto"><table id="lt"></table></div></section>
 
 <section id="s-proj"><div class="card" style="margin-bottom:16px"><div class="pf">
@@ -228,7 +228,7 @@ inp.onkeydown=e=>{if(e.key==='Enter')send(inp.value)};}
 function toast(t){const e=$('tg');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',2200);}
 function remind(n){toast('已標記提醒：'+n+'（展示版不會實際寄信）');}
 
-$('q').oninput=list;$('fs').onchange=list;$('rf').onclick=()=>{loadAll();toast('已重新同步')};
+$('xl').onclick=()=>{const a=document.createElement('a');a.href='/api/export.xlsx?refresh=1';const n=new Date(),z=x=>String(x).padStart(2,'0');a.download='交接明細_'+n.getFullYear()+z(n.getMonth()+1)+z(n.getDate())+'_'+z(n.getHours())+z(n.getMinutes())+'.xlsx';document.body.appendChild(a);a.click();a.remove();toast('正在產生 Excel，完成後會自動下載')};$('q').oninput=list;$('fs').onchange=list;$('rf').onclick=()=>{loadAll();toast('已重新同步')};
 let popInit=false;$('fb').onclick=()=>{const p=$('pop');p.style.display=p.style.display==='block'?'none':'block';if(window.__dockClamp)__dockClamp();if(!popInit){mkChat($('popBox'),'b');popInit=true;}};
 function crm(){if(!P.length)return;
  const r=P.flatMap(p=>p.proj.map(x=>({...x,p,pc:Math.min(100,+x.p||0),dd:x.d,d:x.d?Math.round((dt(x.d)-TODAY)/864e5):null}))).sort((a,b)=>(a.d??9999)-(b.d??9999));

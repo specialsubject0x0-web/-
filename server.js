@@ -273,6 +273,7 @@ const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'t
 const LINE_SECRET=E.LINE_CHANNEL_SECRET||'';
 const LINE_TOKEN=E.LINE_CHANNEL_ACCESS_TOKEN||'';
 const LINE_ALLOW=new Set(String(E.LINE_ALLOWED_USER_IDS||'').split(/[;,\\s]+/).filter(Boolean));
+const LINE_ALLOW_ALL=String(E.LINE_ALLOWED_USER_IDS||'').trim()==='*';
 const lineSeen=new Map();
 const linePushOn=()=>!!(LINE_TOKEN&&LINE_PUSH_TARGETS.length>0);
 async function linePush(subject,text){
@@ -298,8 +299,7 @@ async function lineReply(replyToken,text){
 async function lineHandleEvent(ev){
  if(!ev||ev.type!=='message'||!ev.replyToken||!ev.message||ev.message.type!=='text')return;
  const uid=ev.source&&ev.source.userId||'';
- if(!uid||!LINE_ALLOW.has(uid)){
-  if(uid)console.log('LINE user ID（請加入 LINE_ALLOWED_USER_IDS）：'+uid);
+ if(!uid||(!LINE_ALLOW_ALL&&!LINE_ALLOW.has(uid))){
   await lineReply(ev.replyToken,'此 LINE 帳號尚未授權使用「交接不斷線」。請聯絡專題管理員加入使用權限。');
   return;
  }

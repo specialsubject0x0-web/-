@@ -211,7 +211,7 @@ async function llm(q,list){if(!E.ANTHROPIC_API_KEY){LLMLAST={ok:false,err:'未�
   if(!r.ok){LLMLAST={ok:false,status:r.status,err:(await r.text()).slice(0,300),t:Date.now()};return null}const j=await r.json();LLMLAST={ok:true,t:Date.now()};const t=(j.content||[]).map(c=>c.text||'').join('').trim();return t?{source:'AI（LLM）',text:t}:null;}catch(e){LLMLAST={ok:false,err:String(e.message),t:Date.now()};return null}}
 // ---- 通知：Webhook（Teams／Slack／Discord）＋ Email（SMTP 或 Resend）----
 const NF={hook:E.NOTIFY_WEBHOOK_URL||'',to:E.NOTIFY_EMAIL_TO||'',host:E.SMTP_HOST||'',port:+(E.SMTP_PORT||465),secure:E.SMTP_SECURE!=='0',user:E.SMTP_USER||'',pass:E.SMTP_PASS||'',from:E.NOTIFY_FROM||E.SMTP_USER||'',resend:E.RESEND_API_KEY||'',auto:E.AUTO_NOTIFY!=='0'};
-const LINE_PUSH_TARGETS=String(E.LINE_PUSH_TO||'').split(/[;,\\s]+/).filter(Boolean);
+const LINE_PUSH_TARGETS=String(E.LINE_PUSH_TO||'').split(/[;,\s]+/).filter(Boolean);
 const mailOn=()=>!!(NF.to&&(NF.resend||NF.host));
 const mailOf=p=>{const m=String(E.RECV_EMAILS||'').split(/[;,\n]+/).map(x=>x.split('=')).find(x=>x[0].trim()===p.recv);return String(p.recvMail||(m&&m[1])||'').trim()};
 const notifyInfo=()=>({webhook:!!NF.hook,email:!!(NF.resend||NF.host),line:linePushOn(),auto:NF.auto&&(!!NF.hook||mailOn()||linePushOn())});
@@ -276,7 +276,7 @@ const LINE_ALLOW=new Set(String(E.LINE_ALLOWED_USER_IDS||'').split(/[;,\\s]+/).f
 const lineSeen=new Map();
 const linePushOn=()=>!!(LINE_TOKEN&&LINE_PUSH_TARGETS.length>0);
 async function linePush(subject,text){
- const message=(subject?String(subject)+'\\n':'')+String(text||'');
+ const message=(subject?String(subject)+'\n':'')+String(text||'');
  for(const to of LINE_PUSH_TARGETS){
   const r=await fetch('https://api.line.me/v2/bot/message/push',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+LINE_TOKEN},body:JSON.stringify({to,messages:[{type:'text',text:message.slice(0,4900)}]})});
   if(!r.ok)throw new Error('LINE push '+r.status+' '+(await r.text()).slice(0,200));
@@ -353,7 +353,7 @@ http.createServer(async(req,res)=>{
   if(u.pathname==='/api/crm'){try{const d=await loadCrm(u.searchParams.get('refresh')==='1');return send(res,200,{syncedAt:new Date().toISOString(),...d,sample:u.searchParams.get('debug')==='1'?d.sample:undefined});}catch(e){return send(res,502,{error:e.message});}}
   if(u.pathname==='/api/llm'){const d=await load(false),r=await llm('請只回覆「OK」兩個字',d.people.slice(0,1));return send(res,200,{configured:!!E.ANTHROPIC_API_KEY,model:E.LLM_MODEL||'claude-sonnet-4-5',reply:r&&r.text,last:LLMLAST});}
   if(u.pathname==='/api/notify/log')return send(res,200,{info:notifyInfo(),log:nlog});
-  if(u.pathname==='/api/notify'&&req.method==='POST'){const b=await body(req),d=await load(false),p=d.people.find(x=>x.id==b.id);if(!p)return send(res,404,{error:'找不到交接單'});const hasMail=!!(NF.resend||NF.host),hasLine=linePushOn();if(!hasMail&&!hasLine)return send(res,503,{error:'尚未設定通知服務（LINE_PUSH_TO 或 Email）'});const to=hasMail?(mailOf(p)||(/^[^\\s@,;]+@[^\\s@,;]+\\.[^\\s@,;]+$/.test(String(b.to||'').trim())?String(b.to).trim():'')):'';if(hasMail&&!to&&!NF.to&&!hasLine)return send(res,409,{error:'找不到接交人 Email',need:'mail'});const r=await notify('【交接提醒】'+p.name+' 的離職交接',mailText(p),{who:(p.recv||'')+'（接手 '+p.name+'）',pid:p.id},{to,hook:false});return send(res,r.ok?200:502,r);}
+  if(u.pathname==='/api/notify'&&req.method==='POST'){const b=await body(req),d=await load(false),p=d.people.find(x=>x.id==b.id);if(!p)return send(res,404,{error:'找不到交接單'});const hasMail=!!(NF.resend||NF.host),hasLine=linePushOn();if(!hasMail&&!hasLine)return send(res,503,{error:'尚未設定通知服務（LINE_PUSH_TO 或 Email）'});const to=hasMail?(mailOf(p)||(/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(String(b.to||'').trim())?String(b.to).trim():'')):'';if(hasMail&&!to&&!NF.to&&!hasLine)return send(res,409,{error:'找不到接交人 Email',need:'mail'});const r=await notify('【交接提醒】'+p.name+' 的離職交接',mailText(p),{who:(p.recv||'')+'（接手 '+p.name+'）',pid:p.id},{to,hook:false});return send(res,r.ok?200:502,r);}
   if(u.pathname==='/api/ai'){const d=await load(false),p=d.people.find(x=>x.id==u.searchParams.get('id'));if(!p)return send(res,404,{error:'找不到交接單'});return send(res,200,{text:u.searchParams.get('kind')==='onboard'?onboardOf(p):summaryOf(p)});}
   if(u.pathname.startsWith('/report/')){if(!authed(req)){res.writeHead(401,{'Content-Type':'text/plain; charset=utf-8'});return res.end('請先登入');}const d=await load(false),p=d.people.find(x=>String(x.id)===u.pathname.slice(8));if(!p){res.writeHead(404,{'Content-Type':'text/plain; charset=utf-8'});return res.end('找不到交接單');}res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});return res.end(reportHtml(p));}
   if(u.pathname==='/api/chat'&&req.method==='POST'){const b=await body(req);return send(res,200,await chat(String(b.q||'').slice(0,500),String(b.sid||'web')));}

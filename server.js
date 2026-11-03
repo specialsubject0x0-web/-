@@ -240,7 +240,7 @@ setInterval(autoTick,600000).unref();setTimeout(autoTick,25000).unref();
 // ---- 閉環狀態 ----
 function loopOf(p){const cr=ccache.data,names=cr?new Set([...(cr.customers||[]),...(cr.companies||[])].map(x=>String(x.name||'').trim()).filter(Boolean)):null;
  const mt=names?p.cust.filter(c=>names.has((c.n||'').trim())).length:0,nt=nlog.some(n=>n.ok&&n.pid===p.id);
- return [{n:'BizForm 填單',s:'ok',t:'已送出'},{n:'三方簽核',s:p.sg===3?'ok':'wait',t:p.sg+'/3'},{n:'CRM 客戶比對',s:!names?'na':(p.cust.length&&mt===p.cust.length)?'ok':'wait',t:names?`${mt}/${p.cust.length} 已在 CRM`:'CRM 未載入'},{n:'C.ai 通知',s:nt?'ok':'wait',t:nt?'已通知':'尚未通知'},{n:'儀表板結案',s:status(p)==='已完成'?'ok':'wait',t:status(p)}];}
+ return [{n:'BizForm 填單',s:'ok',t:'已送出'},{n:'三方簽核',s:p.sg===3?'ok':'wait',t:p.sg+'/3'},{n:'C.ai 通知',s:nt?'ok':'wait',t:nt?'已通知':'尚未通知'},{n:'儀表板結案',s:status(p)==='已完成'?'ok':'wait',t:status(p)}];}
 const withLoop=d=>({...d,people:d.people.map(p=>({...p,loop:loopOf(p)})),ana:anaOf(d.people)});
 // ---- PDF 交接報告（瀏覽器列印／另存 PDF）----
 function reportHtml(p){const X=xe,d=dleft(p),ck=p.ckl.map((t,i)=>`<tr><td>${i+1}</td><td>${X(t||'（第 '+(i+1)+' 項）')}</td><td class="${p.cki.includes(i)?'ok':'no'}">${p.cki.includes(i)?'✔ 已確認':'✘ 未確認'}</td></tr>`).join('');

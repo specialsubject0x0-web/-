@@ -42,7 +42,7 @@ main{min-height:100vh}
 .pg{padding:24px 28px}.pg>section{display:none}.pg>section.on{display:block}
 .grid{display:grid;gap:16px}.g4{grid-template-columns:repeat(4,1fr)}.g2{grid-template-columns:1fr 1fr}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:18px}
-.kpi .l{color:var(--mu);font-size:13px}.kpi .v{font-size:30px;font-weight:700;margin-top:6px}.kpi .s{font-size:12px;color:var(--mu);margin-top:2px}
+.kpi .l{color:var(--mu);font-size:13px}.kpi .v{font-size:30px;font-weight:700;margin-top:6px}.kpi .v.red{color:#ef4444}.kpi .v.grn{color:#22c55e}.kpi .s{font-size:12px;color:var(--mu);margin-top:2px}
 .card h3{margin:0 0 12px;font-size:16px}
 table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--bd);vertical-align:middle}th{font-size:12px;color:var(--mu);font-weight:600}
 .late{background:var(--redbg);border-color:#fca5a5}
@@ -160,22 +160,23 @@ function go(){const h=(location.hash||'#dash').slice(1);const pg=PAGES.find(p=>p
  document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.p===pg[0]));$('pt').textContent=pg[2];if(pg[0]==='note')markSeen();moveInd();}
 addEventListener('hashchange',go);
 const cnt=s=>P.filter(p=>p.st===s).length;
+const kc=(l,v)=>{const n=parseInt(v);if(l==='逾期未完成'||l==='逾期專案'||l==='已逾期')return n>0?'red':'grn';if(l==='已完成')return n>0?'grn':'';if(l==='簽名齊全率')return n===100?'grn':'';return ''};
 function dash(){
  const n=P.length,avg=Math.round(P.reduce((a,p)=>a+p.pct,0)/n);
  const k=[['交接總人數',n,'來自 BizForm'],['進行中',cnt('進行中'),''],['即將到期',cnt('即將到期'),'14 天內最後工作日'],['逾期未完成',cnt('逾期未完成'),'需立即處理'],['已完成',cnt('已完成'),'7 大項＋3 簽名'],['平均完成度',avg+'%','7 大項確認'],['簽名齊全率',Math.round(P.filter(p=>p.sg===3).length/n*100)+'%','移交／接交／監交'],['進行中專案',P.reduce((a,p)=>a+p.proj.length,0),'待移轉案件']];
- $('kpis').innerHTML=k.map(x=>`<div class="card kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${x[2]}</div></div>`).join('');
+ $('kpis').innerHTML=k.map(x=>`<div class="card kpi"><div class="l">${x[0]}</div><div class="v ${kc(x[0],x[1])}">${x[1]}</div><div class="s">${x[2]}</div></div>`).join('');
  const al=P.filter(p=>p.st==='逾期未完成'||p.st==='即將到期').sort((a,b)=>a.days-b.days);
  $('alertT').innerHTML='<tr><th>移交人</th><th>部門</th><th>接交人</th><th>狀態</th><th>最後工作日</th><th>完成度</th><th></th></tr>'+al.map(p=>`<tr><td><b>${p.name}</b></td><td>${p.dept}</td><td>${p.recv}</td><td>${chip(p.st)}</td><td>${p.last}（${p.days<0?'已過 '+(-p.days)+' 天':'剩 '+p.days+' 天'}）</td><td>${p.pct}%</td><td><button class="btn sm" onclick="remind('${p.recv}')">🔔 提醒接交人</button></td></tr>`).join('');
  const dep={};P.forEach(p=>dep[p.dept]=(dep[p.dept]||0)+1);const mx=Math.max(...Object.values(dep));
  const bars=o=>Object.entries(o).map(([a,b])=>`<div style="display:flex;gap:10px;align-items:center;margin:7px 0"><span style="width:90px">${a}</span><div class="bar" style="flex:1"><i style="width:${b/mx*100}%"></i></div><b>${b}</b></div>`).join('');
  $('deptC').innerHTML=bars(dep);$('biC').innerHTML=bars(dep);
  const st={};['進行中','即將到期','逾期未完成','已完成'].forEach(s=>st[s]=cnt(s));
- $('stC').innerHTML=Object.entries(st).map(([a,b])=>`<div style="display:flex;gap:10px;align-items:center;margin:9px 0">${chip(a)}<div class="bar" style="flex:1"><i style="width:${b/n*100}%"></i></div><b>${b}</b></div>`).join('');
+ $('stC').innerHTML=Object.entries(st).map(([a,b])=>`<div style="display:flex;gap:10px;align-items:center;margin:9px 0">${chip(a)}<div class="bar" style="flex:1"><i style="width:${b/n*100}%${a==='逾期未完成'?';background:#ef4444':a==='已完成'?';background:#22c55e':''}"></i></div><b style="${a==='逾期未完成'&&b>0?'color:#ef4444':a==='已完成'&&b>0?'color:#22c55e':''}">${b}</b></div>`).join('');
  
  NK=al.map(p=>p.id+':'+p.st);
  const isNote=(location.hash||'')==='#note';
  const k2=[['逾期專案',P.flatMap(p=>p.proj).filter(x=>x.d&&dt(x.d)<TODAY&&(+x.p||0)<100).length,'截止日已過、未達 100%'],['風險事項',P.reduce((a,p)=>a+p.risk.length,0),'未結事項合計'],['客戶窗口',P.reduce((a,p)=>a+p.cust.length,0),'待移轉'],['未完成平均剩餘',(()=>{const o=P.filter(p=>p.st!=='已完成');return o.length?Math.round(o.reduce((a,p)=>a+p.days,0)/o.length)+' 天':'—'})(),'距最後工作日']];
- $('kpis2').innerHTML=k2.map(x=>`<div class="card kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${x[2]}</div></div>`).join('');
+ $('kpis2').innerHTML=k2.map(x=>`<div class="card kpi"><div class="l">${x[0]}</div><div class="v ${kc(x[0],x[1])}">${x[1]}</div><div class="s">${x[2]}</div></div>`).join('');
  const hb=(o,max)=>Object.entries(o).map(([a,b])=>`<div style="display:flex;gap:10px;align-items:center;margin:7px 0"><span style="width:96px;font-size:13px">${esc(a)}</span><div class="bar" style="flex:1"><i style="width:${b/max*100}%"></i></div><b>${b}</b></div>`).join('')||'<small>無資料</small>';
  const rs={};P.forEach(p=>{const r=p.reason||'未填';rs[r]=(rs[r]||0)+1});$('reasonC').innerHTML=hb(rs,Math.max(...Object.values(rs),1));
  const ck={};for(let i=0;i<=7;i++)ck[i+' 項']=P.filter(p=>p.ck===i).length;$('ckC').innerHTML=hb(ck,Math.max(...Object.values(ck),1));
@@ -253,7 +254,7 @@ let popInit=false;$('fb').onclick=()=>{const p=$('pop');p.style.display=p.style.
 function crm(){if(!P.length)return;
  const r=P.flatMap(p=>p.proj.map(x=>({...x,p,pc:Math.min(100,+x.p||0),dd:x.d,d:x.d?Math.round((dt(x.d)-TODAY)/864e5):null}))).sort((a,b)=>(a.d??9999)-(b.d??9999));
  const late=r.filter(x=>x.d!==null&&x.d<0&&x.pc<100).length,soon=r.filter(x=>x.d!==null&&x.d>=0&&x.d<=14&&x.pc<100).length,avg=r.length?Math.round(r.reduce((a,x)=>a+x.pc,0)/r.length):0;
- $('crmK').innerHTML=[['商機／案件數',r.length],['平均進度',avg+'%'],['14 天內到期',soon],['已逾期',late]].map(x=>`<div class="card kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('');
+ $('crmK').innerHTML=[['商機／案件數',r.length],['平均進度',avg+'%'],['14 天內到期',soon],['已逾期',late]].map(x=>`<div class="card kpi"><div class="l">${x[0]}</div><div class="v ${kc(x[0],x[1])}">${x[1]}</div></div>`).join('');
  const st=CRMD&&CRMD.opps&&CRMD.opps[0]?`<div class="hint">🔗 CRM 連線正常；CRM 回傳的範例商機：<b>交接不斷線－離職人員工作交接表</b>。CRM 的 API 僅支援單筆查詢，完整清單以 BizForm 交接單為準。</div>`:'<div class="hint">資料來源：BizForm 交接單（商機／專案明細）。</div>';
  $('crmT').innerHTML=st+'<table><tr><th>商機／專案</th><th>客戶</th><th>進度</th><th>截止日</th><th>移交人 → 接交人</th><th>風險</th></tr>'+r.map(x=>{const lt=x.d!==null&&x.d<0&&x.pc<100;return `<tr><td><b>${esc(x.n)}</b><br><small style="color:var(--mu)">下一步：${esc(x.nx||'—')}</small></td><td>${esc(x.c)}</td><td style="min-width:110px"><div class="bar"><i style="width:${x.pc}%"></i></div><small>${x.pc}%</small></td><td>${esc(x.dd||'—')}${lt?' <span class="chip c-late">逾期</span>':''}</td><td>${esc(x.p.name)} → ${esc(x.p.recv)}</td><td>${esc(x.r&&x.r!=='無'?x.r:'—')}</td></tr>`}).join('')+'</table>';
  fetch('/api/crm?debug=1').then(r=>r.json()).then(j=>$('crmRaw').textContent=JSON.stringify(j.sample,null,1)).catch(()=>{});}

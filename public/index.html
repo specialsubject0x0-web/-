@@ -241,8 +241,9 @@ const OPEN=new Set();
 function tgl(id,b){const e=$('d'+id),dx=e.querySelector('.dx'),o=e.style.display==='none';o?OPEN.add(id):OPEN.delete(id);if(b)b.textContent=o?'收合':'明細';
  if(!dx){e.style.display=o?'table-row':'none';return}
  clearTimeout(e._t);
- if(o){e.style.display='table-row';dx.classList.add('anim');dx.style.cssText='overflow:hidden;height:0;opacity:0';void dx.offsetHeight;dx.style.cssText='overflow:hidden;transition:height .45s cubic-bezier(.2,.8,.2,1),opacity .35s;height:'+dx.scrollHeight+'px;opacity:1';e._t=setTimeout(()=>{dx.style.cssText='';dx.classList.remove('anim')},520)}
- else{dx.style.cssText='overflow:hidden;height:'+dx.offsetHeight+'px';void dx.offsetHeight;dx.style.cssText='overflow:hidden;transition:height .32s ease,opacity .25s;height:0;opacity:0';e._t=setTimeout(()=>{e.style.display='none';dx.style.cssText=''},340)}}
+ const cs=getComputedStyle(dx);
+ if(o){e.style.display='table-row';const H=dx.scrollHeight,pt=cs.paddingTop,pb=cs.paddingBottom;dx.classList.add('anim');dx.style.cssText='overflow:hidden;height:0;opacity:0;padding-top:0;padding-bottom:0';void dx.offsetHeight;dx.style.cssText='overflow:hidden;will-change:height;transition:height .45s cubic-bezier(.2,.8,.2,1),padding .45s cubic-bezier(.2,.8,.2,1),opacity .35s;height:'+H+'px;opacity:1;padding-top:'+pt+';padding-bottom:'+pb+'';e._t=setTimeout(()=>{dx.style.cssText='';dx.classList.remove('anim')},520)}
+ else{dx.style.cssText='overflow:hidden;height:'+dx.offsetHeight+'px';void dx.offsetHeight;dx.style.cssText='overflow:hidden;will-change:height;transition:height .34s cubic-bezier(.4,0,.2,1),padding .34s cubic-bezier(.4,0,.2,1),opacity .22s;height:0;opacity:0;padding-top:0;padding-bottom:0';e._t=setTimeout(()=>{e.style.display='none';dx.style.cssText=''},360)}}
 (function(){const pop=document.getElementById('pop');let S=null;
  try{const z=JSON.parse(localStorage.getItem('ho_pop')||'null');if(z&&z.w&&z.h){pop.style.setProperty('--cw',z.w+'px');pop.style.setProperty('--ch',z.h+'px')}}catch(e){}
  const cur=()=>{const c=pop.querySelector('.chat');return {w:pop.offsetWidth,h:c?c.offsetHeight:330}};

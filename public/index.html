@@ -161,7 +161,7 @@ const AIC={};
 const CL={'已完成':'c-done','進行中':'c-go','即將到期':'c-soon','逾期未完成':'c-late'};
 const chip=s=>`<span class="chip ${CL[s]}">${s}</span>`;
 const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const PAGES=[['dash','📊','總覽儀表板'],['new','📝','我要開交接單'],['proj','🗂️','案件進度'],['list','📋','交接管理'],['crm','💼','商機與案件'],['bi','📈','Power BI Insight'],['note','🔔','通知']];
+const PAGES=[['dash','📊','總覽儀表板'],['new','📝','我要開交接單'],['list','📋','交接管理'],['proj','🗂️','案件進度'],['crm','💼','商機與案件'],['bi','📈','Power BI Insight'],['note','🔔','通知']];
 $('nav').innerHTML=PAGES.map(p=>`<a href="#${p[0]}" data-p="${p[0]}">${p[1]} ${p[2]}${p[0]==='note'?'<i class="rd" id="rd" title="有新通知"></i>':''}</a>`).join('')+'<i id="ind"></i>';
 let SEEN=null;const seenGet=()=>{if(SEEN)return SEEN;try{SEEN=new Set(JSON.parse(localStorage.getItem('ho_seen')||'[]'))}catch(e){SEEN=new Set()}return SEEN};
 const seenSave=()=>{try{localStorage.setItem('ho_seen',JSON.stringify([...SEEN]))}catch(e){}};let NK=[];

@@ -266,11 +266,65 @@ table{border-collapse:collapse;width:100%;margin-bottom:4px}th,td{border:1px sol
 <div class="sig"><div>移交人簽名</div><div>接交人簽名</div><div>監交人簽名</div></div>
 <script>if(location.search.includes('print=1'))setTimeout(()=>print(),400)</script></body></html>`;}
 const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png'};
+
+// ---- LINE Messaging API Webhook ----
+const LINE_SECRET=E.LINE_CHANNEL_SECRET||'';
+const LINE_TOKEN=E.LINE_CHANNEL_ACCESS_TOKEN||'';
+const LINE_ALLOW=new Set(String(E.LINE_ALLOWED_USER_IDS||'').split(/[;,\\s]+/).filter(Boolean));
+const lineSeen=new Map();
+function lineVerify(raw,signature){
+ if(!LINE_SECRET||!signature)return false;
+ const digest=crypto.createHmac('sha256',LINE_SECRET).update(raw).digest('base64');
+ const a=Buffer.from(digest),b=Buffer.from(String(signature));
+ return a.length===b.length&&crypto.timingSafeEqual(a,b);
+}
+async function lineReply(replyToken,text){
+ if(!LINE_TOKEN||!replyToken)return false;
+ const r=await fetch('https://api.line.me/v2/bot/message/reply',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+LINE_TOKEN},body:JSON.stringify({replyToken,messages:[{type:'text',text:String(text||'').slice(0,4900)}]})});
+ if(!r.ok)throw new Error('LINE reply '+r.status+' '+(await r.text()).slice(0,200));
+ return true;
+}
+async function lineHandleEvent(ev){
+ if(!ev||ev.type!=='message'||!ev.replyToken||!ev.message||ev.message.type!=='text')return;
+ const uid=ev.source&&ev.source.userId||'';
+ if(!uid||!LINE_ALLOW.has(uid)){
+  await lineReply(ev.replyToken,'此 LINE 帳號尚未授權使用「交接不斷線」。請聯絡專題管理員加入使用權限。');
+  return;
+ }
+ const q=String(ev.message.text||'').trim().slice(0,500);
+ if(!q){await lineReply(ev.replyToken,'請輸入想查詢的交接問題。');return;}
+ try{
+  const ans=await chat(q,'line:'+uid);
+  await lineReply(ev.replyToken,ans&&ans.text||'目前無法取得回答，請稍後再試。');
+ }catch(err){
+  console.error('LINE chat failed:',err&&err.message||err);
+  await lineReply(ev.replyToken,'目前查詢服務暫時無法使用，請稍後再試。');
+ }
+}
+async function lineWebhook(req,res){
+ let raw='';
+ req.on('data',c=>{raw+=c;if(raw.length>1024*1024)req.destroy();});
+ req.on('end',async()=>{
+  try{
+   if(!lineVerify(raw,req.headers['x-line-signature'])){res.writeHead(401);return res.end('Invalid signature');}
+   const payload=JSON.parse(raw||'{}');
+   res.writeHead(200,{'Content-Type':'text/plain; charset=utf-8'});res.end('OK');
+   for(const ev of payload.events||[]){
+    const key=ev.webhookEventId||ev.replyToken;
+    if(key&&lineSeen.has(key))continue;
+    if(key){lineSeen.set(key,Date.now());if(lineSeen.size>1000){const cutoff=Date.now()-86400000;for(const [k,t] of lineSeen)if(t<cutoff)lineSeen.delete(k);}}
+    lineHandleEvent(ev).catch(err=>console.error('LINE webhook event failed:',err&&err.message||err));
+   }
+  }catch(err){console.error('LINE webhook error:',err&&err.message||err);if(!res.headersSent){res.writeHead(400);res.end('Bad request');}}
+ });
+}
+
 const body=req=>new Promise(r=>{let b='';req.on('data',c=>b+=c);req.on('end',()=>{try{r(JSON.parse(b||'{}'))}catch(e){r({})}})});
 const authed=req=>!PASS||(req.headers.cookie||'').includes('hs='+tok());
 const send=(res,c,o)=>{res.writeHead(c,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(o));};
 http.createServer(async(req,res)=>{
  try{const u=new URL(req.url,'http://x');
+  if(u.pathname==='/webhook/line'&&req.method==='POST')return lineWebhook(req,res);
   if(u.pathname==='/api/login'&&req.method==='POST'){const b=await body(req);if(!PASS||b.code===PASS){res.writeHead(200,{'Content-Type':'application/json','Set-Cookie':'hs='+tok()+'; HttpOnly; SameSite=Lax; Path=/; Max-Age=86400'});return res.end('{"ok":true}');}return send(res,401,{error:'存取碼錯誤'});}
   if(u.pathname==='/api/config')return send(res,200,{needLogin:!!PASS&&!authed(req),formUrl:CFG.formUrl,powerbi:CFG.powerbi,caiEmbed:CFG.caiEmbed,caiHost:CFG.caiHost,caiBot:CFG.caiBot,caiHome:CFG.caiHome,mock:MOCK,notify:notifyInfo()});
   if(u.pathname.startsWith('/api/')&&!authed(req))return send(res,401,{error:'請先登入'});

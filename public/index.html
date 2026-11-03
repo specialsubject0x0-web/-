@@ -66,9 +66,11 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px
 .fab .bub{background:var(--card);border:1px solid var(--bd);padding:8px 12px;border-radius:12px;font-size:12px;box-shadow:0 4px 14px #0002}
 .fab button{cursor:inherit;width:56px;height:56px;border-radius:50%;background:var(--navy);color:#fff;border:0;font-size:26px;box-shadow:0 4px 14px #0004}
 #dock{position:fixed;left:24px;bottom:22px;z-index:9;display:flex;flex-direction:column;align-items:flex-start;gap:10px;touch-action:none}#dock .fab{position:static;cursor:grab;user-select:none;touch-action:none}#dock.drag,#dock.drag .fab{cursor:grabbing}#dock.drag{filter:drop-shadow(0 8px 18px #0005)}
-#pop{display:none;position:static;width:370px;max-width:calc(100vw - 30px);background:var(--card);border:1px solid var(--bd);border-radius:14px;box-shadow:0 10px 30px #0004;overflow:hidden}
+#pop{display:none;position:relative;width:var(--cw,370px);max-width:calc(100vw - 30px);background:var(--card);border:1px solid var(--bd);border-radius:14px;box-shadow:0 10px 30px #0004;overflow:hidden}
 #pop .h{background:var(--navy);color:#fff;padding:12px 14px;cursor:move;user-select:none;touch-action:none;display:flex;justify-content:space-between;align-items:center}#pop .h .x{background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer;padding:0 4px}#pop .h small{display:block;opacity:.65;font-size:11px}
-#pop .chat{border:0;border-radius:0;height:330px}
+#pop .chat{border:0;border-radius:0;height:var(--ch,330px)}
+.rz{position:absolute;z-index:3;touch-action:none}.rz[data-m=h]{top:0;left:14px;right:34px;height:6px;cursor:ns-resize}.rz[data-m=w]{top:34px;right:0;bottom:0;width:6px;cursor:ew-resize}.rz[data-m=wh]{top:0;right:0;width:20px;height:20px;cursor:nesw-resize}.rz[data-m=wh]::after{content:"";position:absolute;top:5px;right:5px;width:8px;height:8px;border-top:2px solid #fffa;border-right:2px solid #fffa;border-radius:0 3px 0 0}#pop .h .x{margin-right:12px}
+@keyframes dxc{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}.dx.anim>*{animation:dxc .5s cubic-bezier(.2,.8,.2,1) both}.dx.anim>*:nth-child(n+2){animation-delay:.06s}.dx.anim>*:nth-child(n+4){animation-delay:.12s}.dx.anim>*:nth-child(n+6){animation-delay:.18s}.dx.anim .dc{animation:dxc .5s cubic-bezier(.2,.8,.2,1) both}.dx.anim .dc:nth-child(2){animation-delay:.08s}.dx.anim .dc:nth-child(3){animation-delay:.16s}
 .dx{padding:16px 18px;background:var(--bg);border-radius:12px;margin:6px 0 10px;text-align:left}.dh{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
 .dg3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}@media(max-width:900px){.dg3{grid-template-columns:1fr}}
 .dc{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px 14px}.dc h4,.sh{margin:0 0 8px;font-size:13.5px}.sh{margin:18px 0 8px}
@@ -139,7 +141,7 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px
 <section id="s-note"><div class="card"><h3>🔔 通知</h3><div id="notes"></div></div><div class="card" style="margin-top:16px"><h3>📨 通知發送紀錄</h3><div id="nlog"></div></div></section>
 </div></main>
 
-<div id="dock"><div id="pop"><div class="h" id="popH"><span><b>交接小幫手</b><small>查交接進度・逾期・案件　<i style="font-style:normal;opacity:.7">（可拖曳移動）</i></small></span><button class="x" id="popX" title="收合">✕</button></div><div id="popBox"></div></div><div class="fab"><div class="bub">BizForm 快查</div><button id="fb" title="交接小幫手">🤖</button></div></div>
+<div id="dock"><div id="pop"><div class="h" id="popH"><span><b>交接小幫手</b><small>查交接進度・逾期・案件　<i style="font-style:normal;opacity:.7">（可拖曳移動・拉邊角縮放）</i></small></span><button class="x" id="popX" title="收合">✕</button></div><i class="rz" data-m="h"></i><i class="rz" data-m="w"></i><i class="rz" data-m="wh" title="拖曳調整大小"></i><div id="popBox"></div></div><div class="fab"><div class="bub">BizForm 快查</div><button id="fb" title="交接小幫手">🤖</button></div></div>
 <div class="tg" id="tg"></div>
 </div>
 
@@ -217,7 +219,7 @@ const RSB=x=>{const r=x.max?x.pts/x.max:0;return `<div class="rb"><span>${esc(x.
    <div class="dc"><h4>🧱 卡在哪一項</h4><div class="stk">${esc(p.stuck.text)}</div>${p.stuck.items.length?'<div class="chips">'+p.stuck.items.map(x=>`<span class="chip c-late">第 ${x.i} 項${x.t?'・'+esc(x.t):''}</span>`).join('')+'</div>':''}${p.stuck.sig.length?'<div class="chips">'+p.stuck.sig.map(s=>`<span class="chip c-soon">缺 ${esc(s)}</span>`).join('')+'</div>':''}</div>
    <div class="dc"><h4>🧬 單點依賴 ${p.spof.idx}%</h4>${sp.length?`<small style="color:var(--mu)">僅 ${esc(p.name)} 一人記錄的窗口／客戶：</small><ul class="sp" style="margin:6px 0 0;padding-left:18px">${sp.slice(0,5).map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>`:'<small style="color:var(--mu)">沒有只有此人掌握的窗口，風險較低。</small>'}<small style="color:var(--mu);display:block;margin-top:8px">接交人 ${esc(p.recv)} 同時承接 ${p.spof.recvN} 人、${p.spof.recvPj} 案</small></div></div>
   ${p.loop?`<div class="dc" style="margin-top:12px"><h4>🔄 交接閉環：BizForm → CRM → C.ai → 儀表板</h4><div class="lpx">${p.loop.map((s,i)=>`<div class="${s.s}"><b>${i+1}. ${esc(s.n)}</b>${s.s==='ok'?'✔ ':s.s==='wait'?'⏳ ':'— '}${esc(s.t)}</div>`).join('')}</div></div>`:''}
-  <div class="acts"><button class="btn sm" onclick="aiAsk(${p.id},'summary',this)">🤖 AI 交接摘要</button><button class="btn sm" onclick="aiAsk(${p.id},'onboard',this)">🧭 新手上路清單</button><a class="btn sm gh" target="_blank" href="/report/${p.id}">📄 匯出報告（PDF）</a><button class="btn sm gh" onclick="remind(${p.id},this)">📨 提醒接交人</button></div>
+  <div class="acts"><button class="btn sm" onclick="aiAsk(${p.id},'summary',this)">🤖 AI 交接摘要</button><button class="btn sm" onclick="aiAsk(${p.id},'onboard',this)">🧭 新手上路清單</button><a class="btn sm gh" target="_blank" href="/report/${p.id}">📄 匯出報告（PDF）</a><button class="btn sm gh" onclick="remind(${p.id},this)">📧 寄信提醒接交人</button></div>
   <pre class="aib" id="ai${p.id}" style="display:${AIC[p.id]?'block':'none'}">${esc(AIC[p.id]||'')}</pre>`};
  const det=p=>{const dl=p.days<0?`已過 ${-p.days} 天`:`剩 ${p.days} 天`;
   const pr=p.proj.map(x=>{const pc=Math.min(100,+x.p||0);return `<tr><td><b>${esc(x.n)}</b></td><td>${esc(x.c||'—')}</td><td style="min-width:100px"><div class="bar"><i style="width:${pc}%"></i></div><small>${pc}%</small></td><td>${esc(x.d||'—')}</td><td>${esc(x.nx||'—')}</td><td>${esc(x.r&&x.r!=='無'?x.r:'—')}</td></tr>`});
@@ -236,7 +238,18 @@ const RSB=x=>{const r=x.max?x.pts/x.max:0;return `<div class="rb"><span>${esc(x.
  $('lcnt').textContent='目前共 '+P.length+' 張表單'+(r.length!==P.length?'（符合篩選 '+r.length+' 張）':'');
  $('lt').innerHTML='<tr><th>移交人</th><th>部門／職稱</th><th>接交人</th><th>狀態</th><th>風險</th><th>最後工作日</th><th>完成度</th><th></th></tr>'+(r.map(p=>`<tr><td><b>${esc(p.name)}</b><br><small style="color:var(--mu)">${esc(p.emp)}</small></td><td>${esc(p.dept)}<br><small style="color:var(--mu)">${esc(p.title)}</small></td><td>${esc(p.recv)}</td><td>${chip(p.st)}</td><td>${rl(p)}</td><td>${esc(p.last)}</td><td style="min-width:110px"><div class="bar"><i style="width:${p.pct}%"></i></div><small>${p.ck}/7 項｜簽名 ${p.sg}/3</small></td><td><button class="btn sm gh" onclick="tgl(${p.id},this)">${OPEN.has(p.id)?'收合':'明細'}</button></td></tr><tr id="d${p.id}" style="display:${OPEN.has(p.id)?'table-row':'none'}"><td colspan="8" style="padding:0">${det(p)}</td></tr>`).join('')||'<tr><td colspan="8">沒有符合的資料</td></tr>');}
 const OPEN=new Set();
-function tgl(id,b){const e=$('d'+id),o=e.style.display==='none';e.style.display=o?'table-row':'none';o?OPEN.add(id):OPEN.delete(id);if(b)b.textContent=o?'收合':'明細';}
+function tgl(id,b){const e=$('d'+id),dx=e.querySelector('.dx'),o=e.style.display==='none';o?OPEN.add(id):OPEN.delete(id);if(b)b.textContent=o?'收合':'明細';
+ if(!dx){e.style.display=o?'table-row':'none';return}
+ clearTimeout(e._t);
+ if(o){e.style.display='table-row';dx.classList.add('anim');dx.style.cssText='overflow:hidden;height:0;opacity:0';void dx.offsetHeight;dx.style.cssText='overflow:hidden;transition:height .45s cubic-bezier(.2,.8,.2,1),opacity .35s;height:'+dx.scrollHeight+'px;opacity:1';e._t=setTimeout(()=>{dx.style.cssText='';dx.classList.remove('anim')},520)}
+ else{dx.style.cssText='overflow:hidden;height:'+dx.offsetHeight+'px';void dx.offsetHeight;dx.style.cssText='overflow:hidden;transition:height .32s ease,opacity .25s;height:0;opacity:0';e._t=setTimeout(()=>{e.style.display='none';dx.style.cssText=''},340)}}
+(function(){const pop=document.getElementById('pop');let S=null;
+ try{const z=JSON.parse(localStorage.getItem('ho_pop')||'null');if(z&&z.w&&z.h){pop.style.setProperty('--cw',z.w+'px');pop.style.setProperty('--ch',z.h+'px')}}catch(e){}
+ const cur=()=>{const c=pop.querySelector('.chat');return {w:pop.offsetWidth,h:c?c.offsetHeight:330}};
+ pop.querySelectorAll('.rz').forEach(el=>el.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();S={m:el.dataset.m,x:e.clientX,y:e.clientY,...cur()};document.body.style.userSelect='none'}));
+ addEventListener('pointermove',e=>{if(!S)return;let w=S.w,h=S.h;if(S.m!=='h')w=S.w+e.clientX-S.x;if(S.m!=='w')h=S.h-(e.clientY-S.y);w=Math.max(300,Math.min(innerWidth-30,w));h=Math.max(240,Math.min(innerHeight-170,h));pop.style.setProperty('--cw',w+'px');pop.style.setProperty('--ch',h+'px');if(window.__dockClamp)__dockClamp()});
+ const end=()=>{if(!S)return;S=null;document.body.style.userSelect='';try{localStorage.setItem('ho_pop',JSON.stringify(cur()))}catch(e){}};
+ addEventListener('pointerup',end);addEventListener('pointercancel',end);})();
 function proj(){const all=[];P.forEach(p=>p.proj.forEach(x=>{const pc=Math.min(100,+x.p||0),d=x.d?Math.round((dt(x.d)-TODAY)/864e5):null;all.push({...x,pc,d,dd:x.d,p:p,pp:p.name+' → '+p.recv})}));
  const uniq=a=>[...new Set(a.filter(Boolean))].sort();const fill=(id,a)=>{const e=$(id);if(e)e.innerHTML=a.map(v=>`<option value="${esc(v)}">`).join('')};
  fill('dl-n',uniq(all.map(x=>x.n)));fill('dl-c',uniq(all.map(x=>x.c)));fill('dl-p',uniq(all.map(x=>x.pp)));
@@ -266,10 +279,15 @@ function mkChat(host,tab){host.innerHTML=`<div class="chat"><div class="msgs"><d
 inp.onkeydown=e=>{if(e.key==='Enter')send(inp.value)};}
 function toast(t){const e=$('tg');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',2200);}
 async function aiAsk(id,kind,b){const o=b.textContent;b.disabled=true;b.textContent='分析中…';try{const j=await fetch('/api/ai?id='+id+'&kind='+kind).then(r=>r.json());AIC[id]=j.text||j.error||'（沒有結果）';const e=$('ai'+id);if(e){e.textContent=AIC[id];e.style.display='block'}}catch(e){toast('分析失敗')}b.disabled=false;b.textContent=o}
-async function remind(id,b){const o=b&&b.textContent;if(b){b.disabled=true;b.textContent='傳送中…'}try{const r=await fetch('/api/notify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})}),j=await r.json();toast(r.ok?'已透過 '+j.via.join('、')+' 發出提醒':(j.err&&j.err[0])||j.error||'發送失敗')}catch(e){toast('發送失敗')}if(b){b.disabled=false;b.textContent=o}loadNlog()}
+async function remind(id,b){const o=b&&b.textContent,p=P.find(x=>x.id==id)||{},K='ho_mail_'+(p.recv||'');if(b){b.disabled=true;b.textContent='寄送中…'}
+ try{let to='';try{to=localStorage.getItem(K)||''}catch(e){}
+  const go=async t=>{const r=await fetch('/api/notify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,to:t})});return [r,await r.json()]};
+  let [r,j]=await go(to);
+  if(r.status===409){const m=(prompt('找不到「'+(p.recv||'接交人')+'」的 Email，請輸入要寄送的信箱：',to)||'').trim();if(!/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(m)){toast('已取消：未提供有效的 Email')}else{try{localStorage.setItem(K,m)}catch(e){}[r,j]=await go(m)}}
+  if(r.ok)toast('已寄出提醒信給 '+(j.to||p.recv));else if(r.status!==409)toast((j.err&&j.err[0])||j.error||'寄送失敗')}catch(e){toast('寄送失敗')}if(b){b.disabled=false;b.textContent=o}loadNlog()}
 async function loadNlog(){try{const j=await fetch('/api/notify/log').then(r=>r.json()),i=j.info,el=$('nlog');if(!el)return;
  const on=(f,n)=>`<span class="chip ${f?'c-done':'c-late'}">${n} ${f?'已啟用':'未設定'}</span>`;
- el.innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">${on(i.webhook,'Teams／Webhook')} ${on(i.email,'Email')} ${on(i.auto,'逾期自動提醒（工作日 09–18 點）')}</div>`+(i.webhook||i.email?'':'<div class="hint">尚未設定通知管道。到 Render → Environment 加入 NOTIFY_WEBHOOK_URL（Teams／Slack／Discord）或 NOTIFY_EMAIL_TO＋SMTP_HOST／SMTP_USER／SMTP_PASS（或 RESEND_API_KEY）即可真正發送。</div>')+(j.log.map(n=>`<div class="nlg">${n.ok?'✅':'❌'} <b>${n.auto?'自動':'手動'}</b>・${esc(n.who||'')}　<small style="color:var(--mu)">${new Date(n.t).toLocaleString('zh-TW',{hour12:false})}${n.ok?'・'+esc(n.via.join('、')):'・'+esc((n.err||[]).join('；'))}</small></div>`).join('')||'<small style="color:var(--mu)">還沒有發送紀錄。</small>')}catch(e){}}
+ el.innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">${on(i.webhook,'Teams／Webhook')} ${on(i.email,'Email')} ${on(i.auto,'逾期自動提醒（工作日 09–18 點）')}</div>`+(i.webhook||i.email?'':'<div class="hint">尚未設定通知管道。到 Render → Environment 加入 NOTIFY_WEBHOOK_URL（Teams／Slack／Discord）或 NOTIFY_EMAIL_TO＋SMTP_HOST／SMTP_USER／SMTP_PASS（或 RESEND_API_KEY）即可真正發送。</div>')+(j.log.map(n=>`<div class="nlg">${n.ok?'✅':'❌'} <b>${n.auto?'自動':'手動'}</b>・${esc(n.who||'')}${n.to?' → '+esc(n.to):''}　<small style="color:var(--mu)">${new Date(n.t).toLocaleString('zh-TW',{hour12:false})}${n.ok?'・'+esc(n.via.join('、')):'・'+esc((n.err||[]).join('；'))}</small></div>`).join('')||'<small style="color:var(--mu)">還沒有發送紀錄。</small>')}catch(e){}}
 
 const isDark=()=>{const t=document.documentElement.getAttribute('data-theme');return t?t==='dark':matchMedia('(prefers-color-scheme:dark)').matches};
 const paintTh=()=>{$('th').textContent=isDark()?'☀️':'🌙';$('th').title=isDark()?'切換為淺色':'切換為深色'};

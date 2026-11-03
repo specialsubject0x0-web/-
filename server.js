@@ -296,7 +296,7 @@ async function lineReply(replyToken,text){
  if(!r.ok)throw new Error('LINE reply '+r.status+' '+(await r.text()).slice(0,200));
  return true;
 }
-async async function lineHandleEvent(ev){
+async function lineHandleEvent(ev){
  if(!ev||ev.type!=='message'||!ev.replyToken||!ev.message||ev.message.type!=='text')return;
  const uid=ev.source&&ev.source.userId||'';
  if(!uid||(!LINE_ALLOW_ALL&&!LINE_ALLOW.has(uid))){

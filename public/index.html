@@ -10,6 +10,8 @@
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--bg:#0f1521;--card:#1a2233;--tx:#e5e7eb;--mu:#9ca3af;--bd:#2c3649;--redbg:#3b1a1a;--grnbg:#14351f;--blubg:#16294d;--ambbg:#3d2a14}}
 :root[data-theme=dark]{color-scheme:dark;--bg:#0f1521;--card:#1a2233;--tx:#e5e7eb;--mu:#9ca3af;--bd:#2c3649;--redbg:#3b1a1a;--grnbg:#14351f;--blubg:#16294d;--ambbg:#3d2a14}
 :root[data-theme=light]{color-scheme:light}
+html.theme-anim,html.theme-anim *,html.theme-anim *::before,html.theme-anim *::after{transition:background-color .6s ease-in-out,color .6s ease-in-out,border-color .6s ease-in-out,box-shadow .6s ease-in-out,fill .6s ease-in-out!important}
+#th.spin{animation:thspin .6s cubic-bezier(.34,1.56,.64,1)}@keyframes thspin{from{transform:rotate(-120deg) scale(.5);opacity:.3}to{transform:none;opacity:1}}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--tx);font-size:14px}
 button{font:inherit;cursor:pointer}a{color:inherit}
 #login{display:flex;min-height:100vh}
@@ -234,7 +236,7 @@ function remind(n){toast('已標記提醒：'+n+'（展示版不會實際寄信�
 
 const isDark=()=>{const t=document.documentElement.getAttribute('data-theme');return t?t==='dark':matchMedia('(prefers-color-scheme:dark)').matches};
 const paintTh=()=>{$('th').textContent=isDark()?'☀️':'🌙';$('th').title=isDark()?'切換為淺色':'切換為深色'};
-$('th').onclick=()=>{const n=isDark()?'light':'dark';document.documentElement.setAttribute('data-theme',n);try{localStorage.setItem('ho_theme',n)}catch(e){}paintTh()};paintTh();
+$('th').onclick=()=>{const n=isDark()?'light':'dark';const R=document.documentElement;R.classList.add('theme-anim');clearTimeout(window.__thT);window.__thT=setTimeout(()=>R.classList.remove('theme-anim'),750);R.setAttribute('data-theme',n);try{localStorage.setItem('ho_theme',n)}catch(e){}paintTh();$('th').classList.remove('spin');void $('th').offsetWidth;$('th').classList.add('spin')};paintTh();
 $('xl').onclick=()=>{const a=document.createElement('a');a.href='/api/export.xlsx?refresh=1';const n=new Date(),z=x=>String(x).padStart(2,'0');a.download='交接明細_'+n.getFullYear()+z(n.getMonth()+1)+z(n.getDate())+'_'+z(n.getHours())+z(n.getMinutes())+'.xlsx';document.body.appendChild(a);a.click();a.remove();toast('正在產生 Excel，完成後會自動下載')};$('q').oninput=list;$('fs').onchange=list;$('rf').onclick=()=>{loadAll();toast('已重新同步')};
 let popInit=false;$('fb').onclick=()=>{const p=$('pop');p.style.display=p.style.display==='block'?'none':'block';if(window.__dockClamp)__dockClamp();if(!popInit){mkChat($('popBox'),'b');popInit=true;}};
 function crm(){if(!P.length)return;

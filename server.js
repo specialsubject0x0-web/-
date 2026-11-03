@@ -86,6 +86,47 @@ async function chat(q,sid){
  if(CFG.caiEndpoint){try{const r=await fetch(CFG.caiEndpoint,{method:'POST',headers:{'Content-Type':'application/json',...(E.CAI_API_KEY?{Authorization:'Bearer '+E.CAI_API_KEY}:{})},body:JSON.stringify({sessionId:sid,message:q,text:q})});
   if(r.ok){const j=await r.json();const t=j.reply||j.text||j.answer||(j.messages&&j.messages.map(m=>m.text||'').join('\n'))||JSON.stringify(j);return {source:'C.ai',text:t};}}catch(e){}}
  return {source:'BizForm 快查',text:localAnswer(q,list)};}
+// ---- 零相依 .xlsx 產生器（匯出交接明細）----
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc32=b=>{let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CRC[(c^b[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0};
+function zip(files){const loc=[],cen=[];let off=0;
+ for(const [name,data] of files){const nb=Buffer.from(name),d=Buffer.from(data),c=crc32(d);
+  const h=Buffer.alloc(30);h.writeUInt32LE(0x04034b50,0);h.writeUInt16LE(20,4);h.writeUInt16LE(0x0800,6);h.writeUInt16LE(0x21,12);h.writeUInt32LE(c,14);h.writeUInt32LE(d.length,18);h.writeUInt32LE(d.length,22);h.writeUInt16LE(nb.length,26);
+  loc.push(h,nb,d);
+  const e=Buffer.alloc(46);e.writeUInt32LE(0x02014b50,0);e.writeUInt16LE(20,4);e.writeUInt16LE(20,6);e.writeUInt16LE(0x0800,8);e.writeUInt16LE(0x21,14);e.writeUInt32LE(c,16);e.writeUInt32LE(d.length,20);e.writeUInt32LE(d.length,24);e.writeUInt16LE(nb.length,28);e.writeUInt32LE(off,42);
+  cen.push(e,nb);off+=30+nb.length+d.length}
+ const cb=Buffer.concat(cen),end=Buffer.alloc(22);end.writeUInt32LE(0x06054b50,0);end.writeUInt16LE(files.length,8);end.writeUInt16LE(files.length,10);end.writeUInt32LE(cb.length,12);end.writeUInt32LE(off,16);
+ return Buffer.concat([...loc,cb,end]);}
+const xe=s=>String(s==null?'':s).replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g,'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const colName=i=>{let s='';for(i++;i>0;i=Math.floor((i-1)/26))s=String.fromCharCode(65+(i-1)%26)+s;return s};
+function sheetXml(head,rows){
+ const wid=v=>[...String(v==null?'':v)].reduce((a,ch)=>a+(ch.charCodeAt(0)>255?2:1),0);
+ const cols=head.map((h,i)=>Math.min(48,Math.max(9,wid(h)+4,...rows.map(r=>wid(r[i])+2))));
+ const cell=(v,i,r,hd)=>typeof v==='number'&&isFinite(v)?`<c r="${colName(i)}${r}"><v>${v}</v></c>`:`<c r="${colName(i)}${r}" t="inlineStr"${hd?' s="1"':''}><is><t xml:space="preserve">${xe(v)}</t></is></c>`;
+ const body=[head,...rows].map((r,ri)=>`<row r="${ri+1}">${r.map((v,i)=>cell(v,i,ri+1,ri===0)).join('')}</row>`).join('');
+ return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${cols.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join('')}</cols><sheetData>${body}</sheetData><autoFilter ref="A1:${colName(head.length-1)}${rows.length+1}"/></worksheet>`;}
+function buildXlsx(sheets){
+ const hdr='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+ const files=[
+  ['[Content_Types].xml',hdr+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'+sheets.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')+'</Types>'],
+  ['_rels/.rels',hdr+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+  ['xl/workbook.xml',hdr+'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'+sheets.map((s,i)=>`<sheet name="${xe(s.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')+'</sheets></workbook>'],
+  ['xl/_rels/workbook.xml.rels',hdr+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+sheets.map((_,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')+`<Relationship Id="rId${sheets.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],
+  ['xl/styles.xml',hdr+'<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Microsoft JhengHei"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Microsoft JhengHei"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1F2A3C"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>'],
+  ...sheets.map((s,i)=>[`xl/worksheets/sheet${i+1}.xml`,sheetXml(s.head,s.rows)])];
+ return zip(files);}
+function exportXlsx(people){
+ const today=new Date();today.setHours(0,0,0,0);
+ const days=p=>Math.round((new Date(String(p.last||'').replace(/\//g,'-'))-today)/864e5);
+ const who=p=>[p.name,p.dept,p.recv];
+ const num=v=>{const n=parseFloat(v);return isNaN(n)?(v||''):n};
+ return buildXlsx([
+  {name:'交接總覽',head:['BizForm 文件編號','員工編號','移交人','部門','職稱','接交人','監交人','交接原因','最後工作日','剩餘天數','交接起始日','交接完成日','狀態','7 大項確認（項）','完成度（%）','簽名數（/3）','專案數','客戶窗口數','未結事項數'],
+   rows:people.map(p=>[p.id,p.emp,p.name,p.dept,p.title,p.recv,p.boss,p.reason,p.last,days(p),p.start,p.end,status(p),p.ck,Math.round(p.ck/7*100),p.sg,p.proj.length,p.cust.length,p.risk.length])},
+  {name:'待移轉專案',head:['移交人','部門','接交人','專案／案件名稱','客戶／需求單位','目前進度（%）','截止日','下一里程碑','已知問題與風險'],
+   rows:people.flatMap(p=>p.proj.map(x=>[...who(p),x.n,x.c,num(x.p),x.d,x.nx,x.r]))},
+  {name:'客戶窗口',head:['移交人','部門','接交人','單位名稱','聯絡人／職稱','類別'],rows:people.flatMap(p=>p.cust.map(x=>[...who(p),x.n,x.c,x.t]))},
+  {name:'未結事項與風險',head:['移交人','部門','接交人','未結事項','風險等級','負責人','追蹤日期'],rows:people.flatMap(p=>p.risk.map(x=>[...who(p),x.n,x.l,x.o,x.d]))}]);}
 const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png'};
 const body=req=>new Promise(r=>{let b='';req.on('data',c=>b+=c);req.on('end',()=>{try{r(JSON.parse(b||'{}'))}catch(e){r({})}})});
 const authed=req=>!PASS||(req.headers.cookie||'').includes('hs='+tok());
@@ -95,6 +136,7 @@ http.createServer(async(req,res)=>{
   if(u.pathname==='/api/login'&&req.method==='POST'){const b=await body(req);if(!PASS||b.code===PASS){res.writeHead(200,{'Content-Type':'application/json','Set-Cookie':'hs='+tok()+'; HttpOnly; SameSite=Lax; Path=/; Max-Age=86400'});return res.end('{"ok":true}');}return send(res,401,{error:'存取碼錯誤'});}
   if(u.pathname==='/api/config')return send(res,200,{needLogin:!!PASS&&!authed(req),formUrl:CFG.formUrl,powerbi:CFG.powerbi,caiEmbed:CFG.caiEmbed,caiHost:CFG.caiHost,caiBot:CFG.caiBot,caiHome:CFG.caiHome,mock:MOCK});
   if(u.pathname.startsWith('/api/')&&!authed(req))return send(res,401,{error:'請先登入'});
+  if(u.pathname==='/api/export.xlsx'){try{const d=await load(u.searchParams.get('refresh')==='1');const f=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date()).replace(/[-: ]/g,'').replace(/^(\d{8})(\d{4})$/,'$1_$2');const fn='交接明細_'+f+'.xlsx';res.writeHead(200,{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','Content-Disposition':'attachment; filename="handover_'+f+'.xlsx"; filename*=UTF-8\'\''+encodeURIComponent(fn),'Cache-Control':'no-store'});return res.end(exportXlsx(d.people));}catch(e){return send(res,502,{error:e.message});}}
   if(u.pathname==='/api/handovers'){try{return send(res,200,await load(u.searchParams.get('refresh')==='1'));}catch(e){return send(res,502,{error:e.message});}}
   if(u.pathname==='/api/crm'){try{const d=await loadCrm(u.searchParams.get('refresh')==='1');return send(res,200,{syncedAt:new Date().toISOString(),...d,sample:u.searchParams.get('debug')==='1'?d.sample:undefined});}catch(e){return send(res,502,{error:e.message});}}
   if(u.pathname==='/api/chat'&&req.method==='POST'){const b=await body(req);return send(res,200,await chat(String(b.q||'').slice(0,500),String(b.sid||'web')));}

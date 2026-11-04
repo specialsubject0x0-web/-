@@ -69,6 +69,8 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px
 .ci{display:flex;gap:8px;padding:10px;border-top:1px solid var(--bd)}.ci input{flex:1;min-width:0}.mic{font-size:15px;padding:5px 9px}.mic.rec{background:#ef4444;color:#fff;border-color:#ef4444;animation:pl 1s infinite}
 .fab{position:fixed;left:24px;bottom:22px;z-index:8;display:flex;align-items:center;gap:10px}
 .fab .bub{background:var(--card);border:1px solid var(--bd);padding:8px 12px;border-radius:12px;font-size:12px;box-shadow:0 4px 14px #0002}
+.fab .cai-link{display:inline-flex;align-items:center;gap:6px;background:var(--org);color:#fff;text-decoration:none;border-radius:12px;padding:9px 13px;font-size:12px;font-weight:700;box-shadow:0 4px 14px #0002;white-space:nowrap}
+.fab .cai-link:hover{filter:brightness(1.08)}
 .fab button{cursor:inherit;width:56px;height:56px;border-radius:50%;background:var(--navy);color:#fff;border:0;font-size:26px;box-shadow:0 4px 14px #0004}
 #dock{position:fixed;left:24px;bottom:22px;z-index:9;display:flex;flex-direction:column;align-items:flex-start;gap:10px;touch-action:none}#dock .fab{position:static;cursor:grab;user-select:none;touch-action:none}#dock.drag,#dock.drag .fab{cursor:grabbing}#dock.drag{filter:drop-shadow(0 8px 18px #0005)}
 #pop{display:none;position:relative;width:var(--cw,370px);max-width:calc(100vw - 30px);background:var(--card);border:1px solid var(--bd);border-radius:14px;box-shadow:0 10px 30px #0004;overflow:hidden}
@@ -106,7 +108,7 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px
 <nav id="nav"></nav>
 <div class="user"><span><b id="un">HR 管理者</b><span id="ur"></span></span><button id="lo">登出</button></div></aside>
 <main>
-<div class="top"><h2 id="pt">總覽儀表板</h2><div class="r"><span id="sync" style="font-size:12px"></span><span id="cai-status" style="font-size:12px;color:var(--mu)">｜ C.ai 尚未載入</span><button class="btn sm gh" id="th" title="切換深色／淺色">🌙</button><button class="btn sm" id="rf">重新整理</button></div></div>
+<div class="top"><h2 id="pt">總覽儀表板</h2><div class="r"><span id="sync" style="font-size:12px"></span><button class="btn sm gh" id="th" title="切換深色／淺色">🌙</button><button class="btn sm" id="rf">重新整理</button></div></div>
 <div class="pg">
 <section id="s-dash"><div class="grid g4" id="kpis"></div><div class="grid g4" id="kpis2" style="margin-top:16px"></div>
  <div class="card late" style="margin-top:16px"><h3>🔔 逾期與即將到期提醒</h3><div style="overflow:auto"><table id="alertT"></table></div></div>
@@ -146,7 +148,7 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px
 <section id="s-note"><div class="card"><h3>🔔 通知</h3><div id="notes"></div></div></section>
 </div></main>
 
-<div id="dock"><div id="pop"><div class="h" id="popH"><span><b>交接小幫手</b><small>查交接進度・逾期・案件　<i style="font-style:normal;opacity:.7">（可拖曳移動・拉邊角縮放）</i></small></span><button class="x" id="popX" title="收合">✕</button></div><i class="rz" data-m="h"></i><i class="rz" data-m="w"></i><i class="rz" data-m="wh" title="拖曳調整大小"></i><div id="popBox"></div></div><div class="fab"><div class="bub">BizForm 快查</div><button id="fb" title="交接小幫手">🤖</button></div></div>
+<div id="dock"><div id="pop"><div class="h" id="popH"><span><b>交接小幫手</b><small>查交接進度・逾期・案件　<i style="font-style:normal;opacity:.7">（可拖曳移動・拉邊角縮放）</i></small></span><button class="x" id="popX" title="收合">✕</button></div><i class="rz" data-m="h"></i><i class="rz" data-m="w"></i><i class="rz" data-m="wh" title="拖曳調整大小"></i><div id="popBox"></div></div><div class="fab"><a class="cai-link" href="https://cai-innoserve.gss.com.tw/webchat/index.html?botid=handover_bot_003" target="_blank" rel="noopener noreferrer" title="在新分頁開啟 C.ai 交接不斷線2.0">💬 C.ai 智慧助理 ↗</a><div class="bub">BizForm 快查</div><button id="fb" title="交接小幫手">🤖</button></div></div>
 <div class="tg" id="tg"></div>
 </div>
 
@@ -328,50 +330,12 @@ async function loadAll(){const s=$('sync');
   s.innerHTML=`<span id="sd" style="color:var(--grn)">●</span> BizForm 已同步 <span id="sn">${P.length}</span> 張（<span id="stm">${fmtT(j.syncedAt)}</span>）${j.mock?'・示範資料':''}`}
  catch(e){s.innerHTML=`<span style="color:var(--red)">●</span> BizForm 連線失敗：${esc(e.message)}`}
  try{const r=await fetch('/api/crm?refresh=1');const j=await r.json();if(!r.ok)throw new Error(j.error);CRMD=j;crm();s.innerHTML+=` ｜ <span style="color:var(--grn)">●</span> CRM 已連線`}catch(e){s.innerHTML+=` ｜ <span style="color:var(--red)">●</span> CRM：${esc(e.message)}`}}
-const isDemoSite = false;
-function setCaiStatus(message,kind){
- const el=$('cai-status');if(!el)return;
- el.textContent='｜ C.ai '+message;
- el.style.color=kind==='ok'?'var(--grn)':kind==='err'?'var(--red)':'var(--mu)';
-}
-function loadCai(){
- const base=CFG.caiHost||'https://cai-innoserve.gss.com.tw';
- const H=(base.endsWith('/')?base.slice(0,-1):base)+'/webchat';
- const botId=CFG.caiBot||'handover_bot_003';
- let initCalled=false,failedScript='';
- const loadScript=(url,callback,label)=>{
-  const scriptTag=document.createElement('script');
-  scriptTag.src=url+'?_='+Date.now();
-  scriptTag.onload=()=>{setCaiStatus((label||'腳本')+'載入成功','wait');if(callback)callback()};
-  scriptTag.onerror=()=>{failedScript=label||url;setCaiStatus(failedScript+'載入失敗，請檢查 C.ai 發佈／網域設定','err');console.error('C.ai WebChat script load failed:',url)};
-  document.head.appendChild(scriptTag);
- };
- window.onCaiWebChatLoaded=function(){
-  initCalled=true;
-  try{
-   if(typeof CaiWebChat!=='undefined'&&CaiWebChat.init){CaiWebChat.init({botId});setCaiStatus('WebChat 已初始化','ok')}
-   else{setCaiStatus('載入器已回呼，但 CaiWebChat.init 不存在','err');console.error('CaiWebChat.init is unavailable')}
-  }catch(e){setCaiStatus('初始化失敗：'+(e.message||e),'err');console.error('C.ai WebChat init failed:',e)}
-  loadScript(H+'/bots/'+botId+'/customWebChatLoaded.js',null,'WebChat 完成腳本');
- };
- window.onConnectFulfill=function(){
-  loadScript(H+'/bots/'+botId+'/customConnectFulfill.js',null,'連線完成腳本');
- };
- setCaiStatus('正在載入設定檔…','wait');
- loadScript(H+'/caiwebchat-config.js',function(){
-  setCaiStatus('設定檔成功，正在載入 WebChat…','wait');
-  loadScript(H+'/caiwebchat-loader.js',function(){
-   if(!initCalled)setCaiStatus('載入器成功，等待初始化回呼…','wait');
-  },'WebChat 主程式');
-  loadScript(H+'/bots/'+botId+'/custom.js',null,'機器人自訂腳本');
- },'設定檔');
- setTimeout(()=>{if(!initCalled&&!failedScript)setCaiStatus('腳本載入後仍未收到初始化回呼；請檢查 C.ai WebChat 發佈／網域設定','err')},15000);
-}
+
 async function enter(){$('login').style.display='none';$('app').style.display='block';$('un').textContent=$('lu').value||'展示使用者';$('ur').textContent=$('lr').value;if(location.hash!=='#dash')location.hash='#dash';go();
  $('feedL').innerHTML=[['handovers','交接總覽'],['projects','待移轉專案'],['customers','客戶窗口'],['risks','未結事項與風險']].map(([k,n])=>{const u=location.origin+'/feed/'+k+'.csv';return `<div class="mini"><span><b>${n}</b><br><small style="word-break:break-all">${u}</small></span><button class="btn sm gh" data-u="${u}">複製</button></div>`}).join('');
  $('feedL').onclick=e=>{const b=e.target.closest('button[data-u]');if(!b)return;const u=b.dataset.u,ok=()=>toast('已複製網址');try{navigator.clipboard.writeText(u).then(ok,()=>{prompt('請複製網址',u)})}catch(x){prompt('請複製網址',u)}};
  $('biA').href=CFG.powerbi;$('newA').href=CFG.formUrl;try{new QRCode($('qr'),{text:CFG.formUrl,width:110,height:110})}catch(e){$('qr').textContent='QR'}
- go();loadAll();if(window.__iv)return;window.__iv=1;if(CFG.caiEmbed)loadCai();else{$('cai-status')?.remove()}setInterval(tick,5000);setInterval(()=>{fetch('/api/crm?refresh=1').then(r=>r.json()).then(j=>{if(j&&j.opps){CRMD=j;crm()}}).catch(()=>{})},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadAll()})}
+ go();loadAll();if(window.__iv)return;window.__iv=1;setInterval(tick,5000);setInterval(()=>{fetch('/api/crm?refresh=1').then(r=>r.json()).then(j=>{if(j&&j.opps){CRMD=j;crm()}}).catch(()=>{})},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadAll()})}
 $('lf').onsubmit=async e=>{e.preventDefault();if(CFG.needLogin){const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:$('lc').value})});if(!r.ok){$('le').textContent='存取碼錯誤';return}}enter()};
 $('lo').onclick=()=>{$('app').style.display='none';$('login').style.display='flex';};
 fetch('/api/config').then(r=>r.json()).then(c=>{CFG=c;if(c.needLogin)$('lcw').style.display='block'});

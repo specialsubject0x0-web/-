@@ -84,13 +84,21 @@ function localAnswer(q,list){const by=s=>list.filter(p=>status(p)===s);const hit
  return '可以問我：「目前交接多少人？」「哪些逾期？」「王小明的交接狀況」。';}
 const WEATHER_CODES={0:'晴朗',1:'大致晴朗',2:'局部多雲',3:'陰天',45:'有霧',48:'霧淞',51:'毛毛雨',53:'毛毛雨',55:'較強毛毛雨',61:'小雨',63:'中雨',65:'大雨',71:'小雪',73:'中雪',75:'大雪',80:'短暫陣雨',81:'陣雨',82:'強陣雨',95:'雷雨',96:'雷雨伴冰雹',99:'強雷雨伴冰雹'};
 const WEATHER_PLACES={淡水:[25.164889,121.448906,'新北市淡水區'],臺北:[25.037658,121.514853,'臺北市'],台北:[25.037658,121.514853,'臺北市'],新北:[24.959207,121.525196,'新北市'],基隆:[25.133314,121.740475,'基隆市'],宜蘭:[24.763975,121.756528,'宜蘭縣'],花蓮:[23.975128,121.613275,'花蓮縣']};
-const weatherQuery=q=>/天氣|氣溫|溫度|下雨|降雨|體感|weather|temperature/i.test(q)||Object.keys(WEATHER_PLACES).some(x=>new RegExp('^'+x+'[市區縣]?[？?！!。 ]*$').test(q));
+const GEO_CACHE=new Map();
+const weatherQuery=q=>/天氣|氣溫|溫度|下雨|降雨|體感|幾度|冷不冷|熱不熱|weather|temperature|forecast|rain|degree/i.test(q)||Object.keys(WEATHER_PLACES).some(x=>new RegExp('^'+x+'[市區縣]?[？?！!。 ]*$').test(q));
+async function locatePlace(query){
+ const key=query.toLowerCase(),hit=GEO_CACHE.get(key);if(hit&&Date.now()-hit.t<86400000)return hit.v;
+ const save=v=>{if(v)GEO_CACHE.set(key,{t:Date.now(),v});return v};
+ try{const u='https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=zh-TW,zh&q='+encodeURIComponent(query),r=await fetch(u,{headers:{'User-Agent':'handover-site-weather/1.0'},signal:AbortSignal.timeout(9000)});if(r.ok){const x=(await r.json())[0];if(x&&x.lat&&x.lon)return save([+x.lat,+x.lon,x.display_name||query]);}}catch(e){}
+ try{const u='https://geocoding-api.open-meteo.com/v1/search?count=1&language=zh&name='+encodeURIComponent(query),r=await fetch(u,{signal:AbortSignal.timeout(9000)});if(r.ok){const x=(await r.json()).results?.[0];if(x)return save([x.latitude,x.longitude,[x.name,x.admin1,x.country].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join('・')]);}}catch(e){}
+ return null;
+}
 async function weatherAnswer(q){
  if(!weatherQuery(q))return null;
  let place=Object.keys(WEATHER_PLACES).find(x=>q.includes(x)),info=place&&WEATHER_PLACES[place];
  if(!info){const cleaned=q.replace(/今天|明天|後天|目前|現在|即時|的|天氣|氣溫|溫度|多少|如何|怎麼樣|會不會|下雨|降雨|體感|[？?！!。]/g,' ').trim();
   if(!cleaned)return {source:'即時天氣',text:'請告訴我想查的地區，例如：「淡水目前氣溫多少？」或「臺北明天天氣如何？」'};
-  try{const g=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&language=zh&name='+encodeURIComponent(cleaned),{signal:AbortSignal.timeout(8000)});if(g.ok){const x=(await g.json()).results?.[0];if(x)info=[x.latitude,x.longitude,[x.name,x.admin1,x.country].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join('・')];}}catch(e){}
+  info=await locatePlace(cleaned);
  }
  if(!info)return {source:'即時天氣',text:'找不到這個地區。請輸入城市、行政區或國家名稱，例如「東京」、「倫敦」或「高雄」。'};
  try{const [lat,lon,label]=info,url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code&timezone=auto&forecast_days=3`,r=await fetch(url,{signal:AbortSignal.timeout(10000)});if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json(),offset=/後天/.test(q)?2:/明天/.test(q)?1:0,day=offset?'明天後天'.slice((offset-1)*2,offset*2):'今天',c=offset?j.daily.weather_code[offset]:j.current.weather_code,temp=offset?`${j.daily.temperature_2m_min[offset]}～${j.daily.temperature_2m_max[offset]} °C`:`${j.current.temperature_2m} °C`,ap=offset?'':`\n- **體感溫度**：${j.current.apparent_temperature} °C`;

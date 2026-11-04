@@ -82,9 +82,24 @@ function localAnswer(q,list){const by=s=>list.filter(p=>status(p)===s);const hit
  if(/到期|快/.test(q))return '即將到期：'+(by('即將到期').map(p=>`${p.name}（${p.last}）`).join('；')||'無');
  if(hit)return `${hit.name}（${hit.dept}${hit.title}）：${status(hit)}，完成度 ${Math.round(hit.ck/7*100)}%，接交人 ${hit.recv}，最後工作日 ${hit.last}。專案：${hit.proj.map(x=>x.n).join('、')||'無'}。`;
  return '可以問我：「目前交接多少人？」「哪些逾期？」「王小明的交接狀況」。';}
+const WEATHER_CODES={0:'晴朗',1:'大致晴朗',2:'局部多雲',3:'陰天',45:'有霧',48:'霧淞',51:'毛毛雨',53:'毛毛雨',55:'較強毛毛雨',61:'小雨',63:'中雨',65:'大雨',71:'小雪',73:'中雪',75:'大雪',80:'短暫陣雨',81:'陣雨',82:'強陣雨',95:'雷雨',96:'雷雨伴冰雹',99:'強雷雨伴冰雹'};
+const WEATHER_PLACES={淡水:[25.164889,121.448906,'新北市淡水區'],臺北:[25.037658,121.514853,'臺北市'],台北:[25.037658,121.514853,'臺北市'],新北:[24.959207,121.525196,'新北市'],基隆:[25.133314,121.740475,'基隆市'],宜蘭:[24.763975,121.756528,'宜蘭縣'],花蓮:[23.975128,121.613275,'花蓮縣']};
+const weatherQuery=q=>/天氣|氣溫|溫度|下雨|降雨|體感|weather|temperature/i.test(q)||Object.keys(WEATHER_PLACES).some(x=>new RegExp('^'+x+'[市區縣]?[？?！!。 ]*$').test(q));
+async function weatherAnswer(q){
+ if(!weatherQuery(q))return null;
+ let place=Object.keys(WEATHER_PLACES).find(x=>q.includes(x)),info=place&&WEATHER_PLACES[place];
+ if(!info){const cleaned=q.replace(/今天|明天|後天|目前|現在|即時|的|天氣|氣溫|溫度|多少|如何|怎麼樣|會不會|下雨|降雨|體感|[？?！!。]/g,' ').trim();
+  if(!cleaned)return {source:'即時天氣',text:'請告訴我想查的地區，例如：「淡水目前氣溫多少？」或「臺北明天天氣如何？」'};
+  try{const g=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&language=zh&countryCode=TW&name='+encodeURIComponent(cleaned),{signal:AbortSignal.timeout(8000)});if(g.ok){const x=(await g.json()).results?.[0];if(x)info=[x.latitude,x.longitude,[x.admin1,x.admin2,x.name].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' ')];}}catch(e){}
+ }
+ if(!info)return {source:'即時天氣',text:'找不到這個地區。請輸入臺灣的城市或行政區名稱，例如「淡水」、「臺北」或「高雄」。'};
+ try{const [lat,lon,label]=info,url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code&timezone=Asia%2FTaipei&forecast_days=3`,r=await fetch(url,{signal:AbortSignal.timeout(10000)});if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json(),offset=/後天/.test(q)?2:/明天/.test(q)?1:0,day=offset?'明天後天'.slice((offset-1)*2,offset*2):'今天',c=offset?j.daily.weather_code[offset]:j.current.weather_code,temp=offset?`${j.daily.temperature_2m_min[offset]}～${j.daily.temperature_2m_max[offset]} °C`:`${j.current.temperature_2m} °C`,ap=offset?'':`\n- **體感溫度**：${j.current.apparent_temperature} °C`;
+  return {source:'Open-Meteo',text:`### 🌤️ ${label}${offset?day:'目前'}天氣\n\n- **氣溫${offset?'範圍':'（模型估計）'}**：${temp}\n- **天氣**：${WEATHER_CODES[c]||'天氣代碼 '+c}${ap}\n- **最高降雨機率**：${j.daily.precipitation_probability_max[offset]}%\n\n**資料時間**：${offset?j.daily.time[offset]:j.current.time}（臺灣時間）\n\n_資料為該地區附近的天氣模型估計與預報，實際情況可能不同。_`};
+ }catch(e){return {source:'即時天氣',text:'目前無法取得天氣資料，請稍後再試；我不會猜測即時氣溫。'};}
+}
 async function chat(q,sid){
  const list=(await load()).people;
- {const s=smartChat(q,list);if(s)return s;const l=await llm(q,list);if(l)return l;}
+ {const w=await weatherAnswer(q);if(w)return w;const s=smartChat(q,list);if(s)return s;const l=await llm(q,list);if(l)return l;}
  if(CFG.caiEndpoint){try{const r=await fetch(CFG.caiEndpoint,{method:'POST',headers:{'Content-Type':'application/json',...(E.CAI_API_KEY?{Authorization:'Bearer '+E.CAI_API_KEY}:{})},body:JSON.stringify({sessionId:sid,message:q,text:q})});
   if(r.ok){const j=await r.json();const t=j.reply||j.text||j.answer||(j.messages&&j.messages.map(m=>m.text||'').join('\n'))||JSON.stringify(j);return {source:'C.ai',text:t};}}catch(e){}}
  return {source:'BizForm 快查',text:localAnswer(q,list)};}
@@ -172,6 +187,15 @@ function enrich(list){
 function anaOf(list){const a=list.filter(p=>status(p)!=='已完成');const rv={},dp={};for(const p of a){const r=rv[p.recv]||(rv[p.recv]={name:p.recv,n:0,pj:0});r.n++;r.pj+=p.proj.length;dp[p.dept]=(dp[p.dept]||0)+1;}
  return {recv:Object.values(rv).filter(x=>x.name).sort((x,y)=>y.pj-x.pj||y.n-x.n),dept:Object.entries(dp).map(([n,c])=>({n,c})).sort((x,y)=>y.c-x.c)};}
 const RSK=p=>p.rs?p.rs.score:0;
+function handoverDetail(p){
+ const missing=(p.ckl||[]).map((t,i)=>({t:t||`第 ${i+1} 項`,ok:(p.cki||[]).includes(i)})).filter(x=>!x.ok).map(x=>x.t.replace(/^[一二三四五六七]、/,'').trim());
+ const d=dleft(p),remain=d<0?`已逾期 ${-d} 天`:`剩 ${d} 天`;
+ return [`### ${p.name}`,`🔵 ${status(p)}`,'',
+  `- **員工編號**：${p.emp||'未填'}`,`- **部門**：${p.dept||'未填'}`,`- **職稱**：${p.title||'未填'}`,`- **接交人**：${p.recv||'未填'}`,`- **直屬主管（監交人）**：${p.boss||'未填'}`,`- **最後工作日**：${p.last||'未填'}（${remain}）`,`- **表單確認度**：${Math.round(p.ck/7*100)}%（7 大項已確認 ${p.ck} 項）`,`- **簽名**：${p.sg}/3`,'',
+  '**尚未確認**',...(missing.length?missing.map(x=>`- ${x}`):['- 已全部確認']),'',
+  '**交接清單**',`- **進行中專案**：${p.proj.length} 筆`,`- **客戶與外部窗口**：${p.cust.length} 筆`,`- **未結事項與風險**：${p.risk.length} 筆`,'',
+  '**繼續查詢**',`可以問我：「${p.name}的接手新手清單」或「${p.name}的風險分析」`].join('\n');
+}
 function summaryOf(p){const st=status(p),d=dleft(p),pr=[...p.rs.parts].sort((a,b)=>b.pts-a.pts).filter(x=>x.pts>0).slice(0,2);
  const L=[`【${p.name} 交接摘要】`,`${p.dept}／${p.title}，最後工作日 ${p.last}（${d<0?'已逾期 '+(-d)+' 天':'剩 '+d+' 天'}），接交人 ${p.recv||'未填'}，監交人 ${p.boss||'未填'}。`,
   `狀態：${st}；7 項確認 ${p.ck}/7（${Math.round(p.ck/7*100)}%）、簽名 ${p.sg}/3；風險燈號「${p.rs.lv}」${p.rs.score} 分。`,`卡關位置：${p.stuck.text}。`];
@@ -197,6 +221,7 @@ const SPQ=list=>{const a=list.filter(p=>status(p)!=='已完成'&&(p.spof.cust.le
 function smartChat(q,list){
  const act=list.filter(p=>status(p)!=='已完成'),by=list.find(p=>q.includes(p.name)),rcv=!by&&list.filter(p=>p.recv&&q.includes(p.recv));
  const ps=by||(rcv&&rcv[0]);
+ if(ps&&/交接|狀況|狀態|進度|資料|明細|完成度/.test(q))return {source:'BizForm 即時資料',text:handoverDetail(ps)};
  if(/新手|上路|接手|怎麼開始|從哪.*開始/.test(q)&&ps)return {source:'交接 AI 分析',text:onboardOf(ps)};
  if(/摘要|總結|概述|重點|簡報/.test(q)&&ps)return {source:'交接 AI 分析',text:summaryOf(ps)};
  if(/只有|唯一|單點|獨家|沒人知道|獨自|掌握/.test(q)){if(by)return {source:'交接 AI 分析',text:`${by.name} 獨自掌握：`+([...by.spof.cust,...by.spof.proj].join('、')||'無')+`（依賴指數 ${by.spof.idx}%）`};return {source:'交接 AI 分析',text:SPQ(list)};}

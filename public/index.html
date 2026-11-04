@@ -69,8 +69,6 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px
 .ci{display:flex;gap:8px;padding:10px;border-top:1px solid var(--bd)}.ci input{flex:1;min-width:0}.mic{font-size:15px;padding:5px 9px}.mic.rec{background:#ef4444;color:#fff;border-color:#ef4444;animation:pl 1s infinite}
 .fab{position:fixed;left:24px;bottom:22px;z-index:8;display:flex;align-items:center;gap:10px}
 .fab .bub{background:var(--card);border:1px solid var(--bd);padding:8px 12px;border-radius:12px;font-size:12px;box-shadow:0 4px 14px #0002}
-.fab .cai-link{display:inline-flex;align-items:center;gap:6px;background:var(--org);color:#fff;text-decoration:none;border-radius:12px;padding:9px 13px;font-size:12px;font-weight:700;box-shadow:0 4px 14px #0002;white-space:nowrap}
-.fab .cai-link:hover{filter:brightness(1.08)}
 .fab button{cursor:inherit;width:56px;height:56px;border-radius:50%;background:var(--navy);color:#fff;border:0;font-size:26px;box-shadow:0 4px 14px #0004}
 #dock{position:fixed;left:24px;bottom:22px;z-index:9;display:flex;flex-direction:column;align-items:flex-start;gap:10px;touch-action:none}#dock .fab{position:static;cursor:grab;user-select:none;touch-action:none}#dock.drag,#dock.drag .fab{cursor:grabbing}#dock.drag{filter:drop-shadow(0 8px 18px #0005)}
 #pop{display:none;position:relative;width:var(--cw,370px);max-width:calc(100vw - 30px);background:var(--card);border:1px solid var(--bd);border-radius:14px;box-shadow:0 10px 30px #0004;overflow:hidden}
@@ -148,7 +146,7 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px
 <section id="s-note"><div class="card"><h3>🔔 通知</h3><div id="notes"></div></div></section>
 </div></main>
 
-<div id="dock"><div id="pop"><div class="h" id="popH"><span><b>交接小幫手</b><small>查交接進度・逾期・案件　<i style="font-style:normal;opacity:.7">（可拖曳移動・拉邊角縮放）</i></small></span><button class="x" id="popX" title="收合">✕</button></div><i class="rz" data-m="h"></i><i class="rz" data-m="w"></i><i class="rz" data-m="wh" title="拖曳調整大小"></i><div id="popBox"></div></div><div class="fab"><a class="cai-link" href="https://cai-innoserve.gss.com.tw/webchat/index.html?botid=handover_bot_003" target="_blank" rel="noopener noreferrer" title="在新分頁開啟 C.ai 交接不斷線2.0">💬 C.ai 智慧助理 ↗</a><div class="bub">BizForm 快查</div><button id="fb" title="交接小幫手">🤖</button></div></div>
+<div id="dock"><div id="pop"><div class="h" id="popH"><span><b>交接小幫手</b><small>查交接進度・逾期・案件　<i style="font-style:normal;opacity:.7">（可拖曳移動・拉邊角縮放）</i></small></span><button class="x" id="popX" title="收合">✕</button></div><i class="rz" data-m="h"></i><i class="rz" data-m="w"></i><i class="rz" data-m="wh" title="拖曳調整大小"></i><div id="popBox"></div></div><div class="fab"><div class="bub">BizForm 快查</div><button id="fb" title="交接小幫手">🤖</button></div></div>
 <div class="tg" id="tg"></div>
 </div>
 

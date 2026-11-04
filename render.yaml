@@ -20,6 +20,10 @@ services:
         value: handover_bot_003
       - key: CRM_API_KEY
         sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
       - key: CRM_BASE
         value: https://crm.vitalyun.com
       - key: CRM_SERVICE_ID

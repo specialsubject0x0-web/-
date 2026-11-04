@@ -15,6 +15,10 @@ Node 18+，零相依。後端代理 BizForm（API 金鑰只存在伺服器）、
 - `CAI_EMBED_URL`：C.ai 網頁聊天嵌入網址 → 「交接小幫手」頁直接嵌入
 - `CAI_CHAT_ENDPOINT`（＋`CAI_API_KEY`）：若有對話 API，右下角小幫手會轉送到 C.ai；失敗時自動改用 BizForm 即時資料回答
 
+## 自然對話與網路搜尋
+- `ANTHROPIC_API_KEY`：讓交接小幫手回答一般知識、翻譯與日常問題。只傳送使用者當次問題，不傳 BizForm 交接資料。
+- `TAVILY_API_KEY`：讓一般問題可使用即時網路搜尋。若未設定，仍可用 Anthropic 回答非即時問題。
+
 ## 資料流
 瀏覽器 → /api/handovers → 伺服器以 x-api-key＋depotId 呼叫 BizForm（query ＋ 逐筆 GET，快取 60 秒）。
 

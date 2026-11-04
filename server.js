@@ -110,10 +110,10 @@ async function weatherAnswer(q){
 }
 async function chat(q,sid){
  const list=(await load()).people;
- {const w=await weatherAnswer(q);if(w)return w;const s=smartChat(q,list);if(s)return s;const l=await llm(q,list);if(l)return l;}
+ {const w=await weatherAnswer(q);if(w)return w;const s=smartChat(q,list);if(s)return s;if(handoverQuestion(q,list)){const l=await llm(q,list);if(l)return l;}else{const g=await generalAnswer(q,sid);if(g)return g;}}
  if(CFG.caiEndpoint){try{const r=await fetch(CFG.caiEndpoint,{method:'POST',headers:{'Content-Type':'application/json',...(E.CAI_API_KEY?{Authorization:'Bearer '+E.CAI_API_KEY}:{})},body:JSON.stringify({sessionId:sid,message:q,text:q})});
   if(r.ok){const j=await r.json();const t=j.reply||j.text||j.answer||(j.messages&&j.messages.map(m=>m.text||'').join('\n'))||JSON.stringify(j);return {source:'C.ai',text:t};}}catch(e){}}
- return {source:'BizForm 快查',text:localAnswer(q,list)};}
+ return handoverQuestion(q,list)?{source:'BizForm 快查',text:localAnswer(q,list)}:{source:'交接小幫手',text:'目前尚未完成一般知識服務的設定。請確認 Render 已設定 ANTHROPIC_API_KEY；若要取得即時網路資訊，另請設定 TAVILY_API_KEY。'};}
 // ---- 零相依 .xlsx 產生器（匯出交接明細）----
 const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
 const crc32=b=>{let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CRC[(c^b[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0};
@@ -245,6 +245,18 @@ async function llm(q,list){if(!E.ANTHROPIC_API_KEY){LLMLAST={ok:false,err:'未�
  const ctx=list.slice(0,40).map(p=>({姓名:p.name,部門:p.dept,接交人:p.recv,最後工作日:p.last,狀態:status(p),風險:p.rs.score,卡關:p.stuck.text,專案:p.proj.map(x=>x.n+'/'+x.c+'/'+x.p+'%'),窗口:p.cust.map(x=>x.n),僅此人掌握:[...p.spof.cust,...p.spof.proj],未結:p.risk.map(x=>x.n+'/'+x.l)}));
  try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',signal:AbortSignal.timeout(25000),headers:{'content-type':'application/json','x-api-key':E.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:E.LLM_MODEL||'claude-sonnet-4-5',max_tokens:900,system:'你是「交接不斷線」的離職交接分析助理。只能根據提供的 JSON 資料用繁體中文簡潔回答；資料中沒有的就說沒有，不要編造。',messages:[{role:'user',content:'資料：'+JSON.stringify(ctx)+'\n\n問題：'+q}]})});
   if(!r.ok){LLMLAST={ok:false,status:r.status,err:(await r.text()).slice(0,300),t:Date.now()};return null}const j=await r.json();LLMLAST={ok:true,t:Date.now()};const t=(j.content||[]).map(c=>c.text||'').join('').trim();return t?{source:'AI（LLM）',text:t}:null;}catch(e){LLMLAST={ok:false,err:String(e.message),t:Date.now()};return null}}
+const GENERAL_SESSIONS=new Map();
+const handoverQuestion=(q,list)=>list.some(p=>q.includes(p.name)||(p.recv&&q.includes(p.recv)))||/交接|離職|接交|移交|監交|逾期|到期|卡關|風險|專案|案件|客戶|窗口|簽名|完成度|部門/.test(q);
+async function webSearch(q){
+ const key=E.TAVILY_API_KEY||E.SEARCH_API_KEY||'';if(!key)return [];
+ try{const r=await fetch('https://api.tavily.com/search',{method:'POST',signal:AbortSignal.timeout(15000),headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify({query:q,search_depth:'basic',max_results:5,include_answer:true})});if(!r.ok)return [];const j=await r.json();return (j.results||[]).slice(0,5).map(x=>({title:String(x.title||''),url:String(x.url||''),content:String(x.content||'').slice(0,900)}));}catch(e){return []}
+}
+async function generalAnswer(q,sid){
+ const sources=await webSearch(q),sourceText=sources.length?sources.map((x,i)=>`[${i+1}] ${x.title}\n${x.content}\n網址：${x.url}`).join('\n\n'):'';
+ if(!E.ANTHROPIC_API_KEY){if(!sources.length)return null;return {source:'網路搜尋',text:`### 搜尋結果\n\n${sources.map((x,i)=>`- **[${i+1}] ${x.title}**\n  ${x.content}\n  ${x.url}`).join('\n')} `};}
+ const key=String(sid||'web').slice(0,80),history=GENERAL_SESSIONS.get(key)||[],prompt=sources.length?`${q}\n\n以下是即時網路搜尋結果，請只依據這些來源回答需要即時資訊的部分；資料不足時說明不足，並在最後列出使用的 [編號]。\n\n${sourceText}`:q;
+ try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',signal:AbortSignal.timeout(25000),headers:{'content-type':'application/json','x-api-key':E.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:E.LLM_MODEL||'claude-sonnet-4-5',max_tokens:900,system:'你是「交接不斷線」網站的自然對話助理。使用繁體中文，先回答重點，內容短而清楚；適度用短標題與條列。你不持有 BizForm 或公司內部資料，不能編造任何員工、客戶、案件或規定。若問題涉及交接資料，請使用者改問具體姓名與交接項目。',messages:[...history.slice(-6),{role:'user',content:prompt}]})});if(!r.ok)return null;const j=await r.json(),text=(j.content||[]).map(x=>x.text||'').join('').trim();if(!text)return null;GENERAL_SESSIONS.set(key,[...history.slice(-4),{role:'user',content:q},{role:'assistant',content:text}]);return {source:sources.length?'AI＋網路搜尋':'AI',text};}catch(e){return null}
+}
 // ---- 通知：Webhook（Teams／Slack／Discord）＋ Email（SMTP 或 Resend）----
 const NF={hook:E.NOTIFY_WEBHOOK_URL||'',to:E.NOTIFY_EMAIL_TO||'',host:E.SMTP_HOST||'',port:+(E.SMTP_PORT||465),secure:E.SMTP_SECURE!=='0',user:E.SMTP_USER||'',pass:E.SMTP_PASS||'',from:E.NOTIFY_FROM||E.SMTP_USER||'',resend:E.RESEND_API_KEY||'',auto:E.AUTO_NOTIFY!=='0'};
 const LINE_PUSH_TARGETS=String(E.LINE_PUSH_TO||'').split(/[;,\s]+/).filter(Boolean);
@@ -375,6 +387,7 @@ http.createServer(async(req,res)=>{
   if(u.pathname==='/webhook/line'&&req.method==='POST')return lineWebhook(req,res);
   if(u.pathname==='/api/login'&&req.method==='POST'){const b=await body(req);if(!PASS||b.code===PASS){res.writeHead(200,{'Content-Type':'application/json','Set-Cookie':'hs='+tok()+'; HttpOnly; SameSite=Lax; Path=/; Max-Age=86400'});return res.end('{"ok":true}');}return send(res,401,{error:'存取碼錯誤'});}
   if(u.pathname==='/api/config')return send(res,200,{needLogin:!!PASS&&!authed(req),formUrl:CFG.formUrl,powerbi:CFG.powerbi,caiEmbed:CFG.caiEmbed,caiHost:CFG.caiHost,caiBot:CFG.caiBot,caiHome:CFG.caiHome,mock:MOCK,notify:notifyInfo()});
+  if(u.pathname==='/api/assistant/status')return send(res,200,{generalAI:!!E.ANTHROPIC_API_KEY,webSearch:!!(E.TAVILY_API_KEY||E.SEARCH_API_KEY)});
   if(u.pathname.startsWith('/api/')&&!authed(req))return send(res,401,{error:'請先登入'});
   if(u.pathname.startsWith('/feed/')){try{
    const ok=!PASS||authed(req)||u.searchParams.get('key')===PASS||req.headers['x-feed-key']===PASS;

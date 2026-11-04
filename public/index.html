@@ -338,12 +338,12 @@ function loadCai(){
  const base=CFG.caiHost||'https://cai-innoserve.gss.com.tw';
  const H=(base.endsWith('/')?base.slice(0,-1):base)+'/webchat';
  const botId=CFG.caiBot||'handover_bot_003';
- let initCalled=false;
+ let initCalled=false,failedScript='';
  const loadScript=(url,callback,label)=>{
   const scriptTag=document.createElement('script');
   scriptTag.src=url+'?_='+Date.now();
   scriptTag.onload=()=>{setCaiStatus((label||'腳本')+'載入成功','wait');if(callback)callback()};
-  scriptTag.onerror=()=>{setCaiStatus((label||'腳本')+'載入失敗','err');console.error('C.ai WebChat script load failed:',url)};
+  scriptTag.onerror=()=>{failedScript=label||url;setCaiStatus(failedScript+'載入失敗，請檢查 C.ai 發佈／網域設定','err');console.error('C.ai WebChat script load failed:',url)};
   document.head.appendChild(scriptTag);
  };
  window.onCaiWebChatLoaded=function(){
@@ -365,7 +365,7 @@ function loadCai(){
   },'WebChat 主程式');
   loadScript(H+'/bots/'+botId+'/custom.js',null,'機器人自訂腳本');
  },'設定檔');
- setTimeout(()=>{if(!initCalled)setCaiStatus('未收到初始化回呼；請檢查發布與網域設定','err')},15000);
+ setTimeout(()=>{if(!initCalled&&!failedScript)setCaiStatus('腳本載入後仍未收到初始化回呼；請檢查 C.ai WebChat 發佈／網域設定','err')},15000);
 }
 async function enter(){$('login').style.display='none';$('app').style.display='block';$('un').textContent=$('lu').value||'展示使用者';$('ur').textContent=$('lr').value;if(location.hash!=='#dash')location.hash='#dash';go();
  $('feedL').innerHTML=[['handovers','交接總覽'],['projects','待移轉專案'],['customers','客戶窗口'],['risks','未結事項與風險']].map(([k,n])=>{const u=location.origin+'/feed/'+k+'.csv';return `<div class="mini"><span><b>${n}</b><br><small style="word-break:break-all">${u}</small></span><button class="btn sm gh" data-u="${u}">複製</button></div>`}).join('');

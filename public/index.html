@@ -328,8 +328,33 @@ async function loadAll(){const s=$('sync');
   s.innerHTML=`<span id="sd" style="color:var(--grn)">●</span> BizForm 已同步 <span id="sn">${P.length}</span> 張（<span id="stm">${fmtT(j.syncedAt)}</span>）${j.mock?'・示範資料':''}`}
  catch(e){s.innerHTML=`<span style="color:var(--red)">●</span> BizForm 連線失敗：${esc(e.message)}`}
  try{const r=await fetch('/api/crm?refresh=1');const j=await r.json();if(!r.ok)throw new Error(j.error);CRMD=j;crm();s.innerHTML+=` ｜ <span style="color:var(--grn)">●</span> CRM 已連線`}catch(e){s.innerHTML+=` ｜ <span style="color:var(--red)">●</span> CRM：${esc(e.message)}`}}
-function loadCai(){const H=CFG.caiHost+'/webchat';const ls=(u,cb)=>{const t=document.createElement('script');t.src=u+'?_='+Date.now();t.onload=()=>cb&&cb();document.head.appendChild(t)};
- window.onCaiWebChatLoaded=()=>{try{CaiWebChat.init({botId:CFG.caiBot})}catch(e){}};ls(H+'/caiwebchat-config.js',()=>ls(H+'/caiwebchat-loader.js'))}
+const isDemoSite = false;
+function loadCai(){
+ const base=CFG.caiHost||'https://cai-innoserve.gss.com.tw';
+ const H=(base.endsWith('/')?base.slice(0,-1):base)+'/webchat';
+ const botId=CFG.caiBot||'handover_bot_003';
+ const loadScript=(url,callback)=>{
+  const scriptTag=document.createElement('script');
+  scriptTag.src=url+'?_='+Date.now();
+  scriptTag.onload=()=>{if(callback)callback()};
+  scriptTag.onerror=()=>console.error('C.ai WebChat script load failed:',url);
+  document.head.appendChild(scriptTag);
+ };
+ window.onCaiWebChatLoaded=function(){
+  try{
+   if(typeof CaiWebChat!=='undefined'&&CaiWebChat.init)CaiWebChat.init({botId});
+   else console.error('C.ai WebChat loader loaded, but CaiWebChat.init is unavailable.');
+  }catch(e){console.error('C.ai WebChat init failed:',e)}
+  loadScript(H+'/bots/'+botId+'/customWebChatLoaded.js');
+ };
+ window.onConnectFulfill=function(){
+  loadScript(H+'/bots/'+botId+'/customConnectFulfill.js');
+ };
+ loadScript(H+'/caiwebchat-config.js',function(){
+  loadScript(H+'/caiwebchat-loader.js');
+  loadScript(H+'/bots/'+botId+'/custom.js');
+ });
+}
 async function enter(){$('login').style.display='none';$('app').style.display='block';$('un').textContent=$('lu').value||'展示使用者';$('ur').textContent=$('lr').value;if(location.hash!=='#dash')location.hash='#dash';go();
  $('feedL').innerHTML=[['handovers','交接總覽'],['projects','待移轉專案'],['customers','客戶窗口'],['risks','未結事項與風險']].map(([k,n])=>{const u=location.origin+'/feed/'+k+'.csv';return `<div class="mini"><span><b>${n}</b><br><small style="word-break:break-all">${u}</small></span><button class="btn sm gh" data-u="${u}">複製</button></div>`}).join('');
  $('feedL').onclick=e=>{const b=e.target.closest('button[data-u]');if(!b)return;const u=b.dataset.u,ok=()=>toast('已複製網址');try{navigator.clipboard.writeText(u).then(ok,()=>{prompt('請複製網址',u)})}catch(x){prompt('請複製網址',u)}};

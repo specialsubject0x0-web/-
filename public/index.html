@@ -271,8 +271,8 @@ function chatFmt(v){const safe=String(v||'').replace(/[&<>]/g,c=>({'&':'&amp;','
 const SID='w'+Math.random().toString(36).slice(2,10);
 function mkChat(host,tab){host.innerHTML=`<div class="chat"><div class="msgs"><div class="m b">您好 👋 我是交接小幫手。可以查 BizForm 交接資料、全球城市天氣，也能回答一般問題與查詢即時網路資訊。</div></div><div class="qk"><button>目前交接多少人？</button><button>哪些逾期？</button><button>誰卡在哪一項？</button><button>風險最高的是誰？</button><button>高承睿的交接狀況</button><button>法國巴黎天氣如何？</button><button>為什麼天空是藍色的？</button></div><div class="ci"><input class="in" placeholder="輸入問題或按 🎤 說話…"><button class="btn sm gh mic" type="button" title="語音輸入">🎤</button><button class="btn sm send">送出</button></div></div>`;
  const ms=host.querySelector('.msgs'),inp=host.querySelector('input');
- const send=async t=>{if(!t.trim())return;ms.insertAdjacentHTML('beforeend',`<div class="m u"></div><div class="m b">思考中…</div>`);const e=ms.querySelectorAll('.m');e[e.length-2].textContent=t;inp.value='';const a=await remoteAns(t),out=e[e.length-1];out.classList.add('rich');out.innerHTML=chatFmt(a);ms.scrollTop=1e9;};
- host.querySelectorAll('.qk button').forEach(b=>b.onclick=()=>send(b.textContent));host.querySelector('.send').onclick=()=>send(inp.value);
+ const send=async raw=>{const t=String(raw??inp.value).trim();inp.value='';if(!t)return;ms.insertAdjacentHTML('beforeend',`<div class="m u"></div><div class="m b">思考中…</div>`);const e=ms.querySelectorAll('.m');e[e.length-2].textContent=t;const a=await remoteAns(t),out=e[e.length-1];out.classList.add('rich');out.innerHTML=chatFmt(a);ms.scrollTop=1e9;};
+ host.querySelectorAll('.qk button').forEach(b=>b.onclick=()=>send(b.textContent));host.querySelector('.send').onclick=()=>send();
  const mic=host.querySelector('.mic'),SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null;
  mic.onclick=()=>{if(!SR){toast('此瀏覽器不支援語音輸入，請改用 Chrome／Edge');return}
   if(rec){rec.stop();return}
@@ -282,7 +282,7 @@ function mkChat(host,tab){host.innerHTML=`<div class="chat"><div class="msgs"><d
   rec.onerror=e=>{toast(e.error==='not-allowed'||e.error==='service-not-allowed'?'請允許瀏覽器使用麥克風':e.error==='no-speech'?'沒有聽到聲音，請再試一次':'語音輸入失敗：'+e.error)};
   rec.onend=()=>{mic.classList.remove('rec');inp.placeholder='輸入或按 🎤 說話…';const t=inp.value.trim();rec=null;if(fin.trim()&&t)send(t)};
   try{rec.start()}catch(e){rec=null}};
-inp.onkeydown=e=>{if(e.key==='Enter')send(inp.value)};}
+inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();send()}};}
 function toast(t){const e=$('tg');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',2200);}
 async function aiAsk(id,kind,b){const o=b.textContent;b.disabled=true;b.textContent='分析中…';try{const j=await fetch('/api/ai?id='+id+'&kind='+kind).then(r=>r.json());AIC[id]=j.text||j.error||'（沒有結果）';const e=$('ai'+id);if(e){e.textContent=AIC[id];e.style.display='block'}}catch(e){toast('分析失敗')}b.disabled=false;b.textContent=o}
 async function remind(id,b){const o=b&&b.textContent,p=P.find(x=>x.id==id)||{},K='ho_mail_'+(p.recv||'');if(b){b.disabled=true;b.textContent='寄送中…'}

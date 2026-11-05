@@ -4,7 +4,7 @@ try{for(const l of fs.readFileSync(path.join(__dirname,'.env'),'utf8').split(/\r
 const E=process.env,MOCK=E.MOCK==='1';
 const CFG={base:(E.BIZFORM_BASE||'https://bizform.vitalyun.com').replace(/\/$/,''),depot:E.DEPOT_ID||'0891fc9e6a5146ee9adc53245f835cd2',formId:+(E.FORM_ID||14),
  formUrl:E.FORM_URL||'https://bizform.vitalyun.com/#/write/14?depotId=0891fc9e6a5146ee9adc53245f835cd2',
- powerbi:E.POWERBI_URL||'https://app.powerbi.com/view?r=eyJrIjoiOTkxM2Q4YmMtMGYyNi00YjkyLWExZGYtNmI1MGUzZjU2NmNhIiwidCI6IjM5OTIzMmZiLTE3ZDEtNDVjYS1iZGE2LTViNTQwNDQxYmQ2MiIsImMiOjEwfQ%3D%3D',
+ powerbi:'https://reurl.cc/27d7mr',
  caiEmbed:E.CAI_EMBED_URL||'',caiEndpoint:E.CAI_CHAT_ENDPOINT||'',caiHome:'https://cai-innoserve.gss.com.tw',caiHost:(E.CAI_HOST||'https://cai-innoserve.gss.com.tw').replace(/\/$/,''),caiBot:E.CAI_BOT_ID||'handover_bot_003'};
 const PASS=E.SITE_PASSCODE||'',SECRET=crypto.randomBytes(16).toString('hex');
 const tok=()=>crypto.createHmac('sha256',SECRET).update('ok').digest('hex');

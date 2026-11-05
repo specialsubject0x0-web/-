@@ -39,7 +39,7 @@ async function sync(){
   await pool(todo,3,async([d,sig])=>{rows.set(d.id,{sig,t:Date.now(),p:shape(await bf('/documents/'+d.id))})});
   list=items.map(d=>rows.get(d.id)&&rows.get(d.id).p).filter(Boolean);
  }
- list=list.map(p=>({risk:[],proj:[],cust:[],...p})).filter(p=>p.name&&!/^\d+$/.test(p.name));
+ list = list.map(p => ({ risk: [], proj: [], cust: [], ...p })).filter(p => p.name && !/^\d+$/.test(p.name) && !/^(DEMO|TEST)/i.test(p.emp));
  cache={t:Date.now(),data:{syncedAt:new Date().toISOString(),mock:MOCK,people:enrich(list)}};return cache.data;}
 async function load(force){
  const now=Date.now(),age=now-cache.t;

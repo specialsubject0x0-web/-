@@ -404,6 +404,20 @@ http.createServer(async(req,res)=>{
   if(u.pathname==='/api/export.xlsx'){try{const d=await load(u.searchParams.get('refresh')==='1');const f=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date()).replace(/[-: ]/g,'').replace(/^(\d{8})(\d{4})$/,'$1_$2');const fn='交接明細_'+f+'.xlsx';res.writeHead(200,{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','Content-Disposition':'attachment; filename="handover_'+f+'.xlsx"; filename*=UTF-8\'\''+encodeURIComponent(fn),'Cache-Control':'no-store'});return res.end(exportXlsx(d.people));}catch(e){return send(res,502,{error:e.message});}}
   if(u.pathname==='/api/handovers'){try{return send(res,200,withLoop(await load(u.searchParams.get('refresh')==='1')));}catch(e){return send(res,502,{error:e.message});}}
   if(u.pathname==='/api/crm'){try{const d=await loadCrm(u.searchParams.get('refresh')==='1');return send(res,200,{syncedAt:new Date().toISOString(),...d,sample:u.searchParams.get('debug')==='1'?d.sample:undefined});}catch(e){return send(res,502,{error:e.message});}}
+  if(u.pathname==='/api/all-data'){try{
+   const d=await load(u.searchParams.get('refresh')==='1');
+   const shs=sheetsOf(d.people);
+   const pack={
+    syncedAt:d.syncedAt,
+    mock:d.mock,
+    handovers:shs[0].rows.map(r=>Object.fromEntries(shs[0].head.map((h,i)=>[h,r[i]==null?'':r[i]]))),
+    projects:shs[1].rows.map(r=>Object.fromEntries(shs[1].head.map((h,i)=>[h,r[i]==null?'':r[i]]))),
+    customers:shs[2].rows.map(r=>Object.fromEntries(shs[2].head.map((h,i)=>[h,r[i]==null?'':r[i]]))),
+    risks:shs[3].rows.map(r=>Object.fromEntries(shs[3].head.map((h,i)=>[h,r[i]==null?'':r[i]])))
+   };
+   res.writeHead(200,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
+   return res.end(JSON.stringify(pack));
+  }catch(e){return send(res,502,{error:e.message});}}
   if(u.pathname==='/api/llm'){const d=await load(false),r=await llm('請只回覆「OK」兩個字',d.people.slice(0,1));return send(res,200,{configured:!!E.ANTHROPIC_API_KEY,model:E.LLM_MODEL||'claude-sonnet-4-5',reply:r&&r.text,last:LLMLAST});}
   if(u.pathname==='/api/notify/log')return send(res,200,{info:notifyInfo(),log:nlog});
   if(u.pathname==='/api/notify'&&req.method==='POST'){const b=await body(req),d=await load(false),p=d.people.find(x=>x.id==b.id);if(!p)return send(res,404,{error:'找不到交接單'});const hasMail=!!(NF.resend||NF.host),hasLine=linePushOn();if(!hasMail&&!hasLine)return send(res,503,{error:'尚未設定通知服務（LINE_PUSH_TO 或 Email）'});const to=hasMail?(mailOf(p)||(/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(String(b.to||'').trim())?String(b.to).trim():'')):'';if(hasMail&&!to&&!NF.to&&!hasLine)return send(res,409,{error:'找不到接交人 Email',need:'mail'});const r=await notify('【交接提醒】'+p.name+' 的離職交接',mailText(p),{who:(p.recv||'')+'（接手 '+p.name+'）',pid:p.id},{to,hook:false});return send(res,r.ok?200:502,r);}

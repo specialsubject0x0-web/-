@@ -38,7 +38,7 @@ nav a{position:relative;z-index:1;transition:color .3s ease,background-color .2s
 .user{flex-shrink:0;display:flex;align-items:center;gap:12px;background:var(--navy2);border-radius:99px;padding:6px 8px 6px 16px;font-size:11px;white-space:nowrap}.user b{color:#fff;font-size:13px;display:block}.user button{background:transparent;border:1px solid #475569;color:#cbd5e1;border-radius:99px;padding:5px 14px;font-size:12px}
 main{min-height:100vh}
 .top{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:var(--card);border-bottom:1px solid var(--bd);position:sticky;top:64px;z-index:4;gap:12px;flex-wrap:wrap}
-.top h2{margin:0;font-size:20px}.top .r{display:flex;gap:12px;align-items:center;color:var(--mu);font-size:13px}
+.top h2{margin:0;font-size:20px}.line-entry{display:inline-flex;align-items:center;background:#06c755;color:#fff;text-decoration:none;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:700;white-space:nowrap}.line-entry:hover{filter:brightness(1.06)}.top .r{display:flex;gap:12px;align-items:center;color:var(--mu);font-size:13px}
 .pg{padding:24px 28px}.pg>section{display:none}.pg>section.on{display:block}
 .grid{display:grid;gap:16px}.g4{grid-template-columns:repeat(4,1fr)}.g2{grid-template-columns:1fr 1fr}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:18px}
@@ -106,7 +106,7 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px
 <nav id="nav"></nav>
 <div class="user"><span><b id="un">HR 管理者</b><span id="ur"></span></span><button id="lo">登出</button></div></aside>
 <main>
-<div class="top"><h2 id="pt">總覽儀表板</h2><div class="r"><span id="sync" style="font-size:12px"></span><button class="btn sm gh" id="th" title="切換深色／淺色">🌙</button><button class="btn sm" id="rf">重新整理</button></div></div>
+<div class="top"><h2 id="pt">總覽儀表板</h2><div class="r"><span id="sync" style="font-size:12px"></span><a id="line-entry" class="line-entry" href="#" target="_blank" rel="noopener noreferrer" hidden>LINE 官方帳號 ↗</a><button class="btn sm gh" id="th" title="切換深色／淺色">🌙</button><button class="btn sm" id="rf">重新整理</button></div></div>
 <div class="pg">
 <section id="s-dash"><div class="grid g4" id="kpis"></div><div class="grid g4" id="kpis2" style="margin-top:16px"></div>
  <div class="card late" style="margin-top:16px"><h3>🔔 逾期與即將到期提醒</h3><div style="overflow:auto"><table id="alertT"></table></div></div>
@@ -293,7 +293,7 @@ async function remind(id,b){const o=b&&b.textContent,p=P.find(x=>x.id==id)||{},K
   if(r.ok)toast('已寄出提醒信給 '+(j.to||p.recv));else if(r.status!==409)toast((j.err&&j.err[0])||j.error||'寄送失敗')}catch(e){toast('寄送失敗')}if(b){b.disabled=false;b.textContent=o}loadNlog()}
 async function loadNlog(){try{const j=await fetch('/api/notify/log').then(r=>r.json()),i=j.info,el=$('nlog');if(!el)return;
  const on=(f,n)=>`<span class="chip ${f?'c-done':'c-late'}">${n} ${f?'已啟用':'未設定'}</span>`;
- el.innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">${on(i.webhook,'Teams／Webhook')} ${on(i.email,'Email')} ${on(i.auto,'逾期自動提醒（工作日 09–18 點）')}</div>`+(i.webhook||i.email?'':'<div class="hint">尚未設定通知管道。到 Render → Environment 加入 NOTIFY_WEBHOOK_URL（Teams／Slack／Discord）或 NOTIFY_EMAIL_TO＋SMTP_HOST／SMTP_USER／SMTP_PASS（或 RESEND_API_KEY）即可真正發送。</div>')+(j.log.map(n=>`<div class="nlg">${n.ok?'✅':'❌'} <b>${n.auto?'自動':'手動'}</b>・${esc(n.who||'')}${n.to?' → '+esc(n.to):''}　<small style="color:var(--mu)">${new Date(n.t).toLocaleString('zh-TW',{hour12:false})}${n.ok?'・'+esc(n.via.join('、')):'・'+esc((n.err||[]).join('；'))}</small></div>`).join('')||'<small style="color:var(--mu)">還沒有發送紀錄。</small>')}catch(e){}}
+ el.innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">${on(i.line,'LINE 主動推播')} ${on(i.webhook,'Teams／Webhook')} ${on(i.email,'Email')} ${on(i.auto,'逾期自動提醒（工作日 09–18 點）')}</div>`+(i.line?'': '<div class="hint">LINE 推播未設定：請在 Render → Environment 確認 LINE_CHANNEL_ACCESS_TOKEN 是目前有效的 Channel access token，並設定 LINE_PUSH_TO（要接收通知的 LINE User ID）。這是網站主動推播，不會改動 C.ai 的 LINE Webhook。</div>')+(i.webhook||i.email?'':'<div class="hint">尚未設定其他通知管道。可設定 NOTIFY_WEBHOOK_URL（Teams／Slack／Discord）或 Email 服務。</div>')+(j.log.map(n=>`<div class="nlg">${n.ok?'✅':'❌'} <b>${n.auto?'自動':'手動'}</b>・${esc(n.who||'')}${n.to?' → '+esc(n.to):''}　<small style="color:var(--mu)">${new Date(n.t).toLocaleString('zh-TW',{hour12:false})}${n.ok?'・'+esc(n.via.join('、')):'・'+esc((n.err||[]).join('；'))}</small></div>`).join('')||'<small style="color:var(--mu)">還沒有發送紀錄。</small>')}catch(e){}}
 
 const isDark=()=>{const t=document.documentElement.getAttribute('data-theme');return t?t==='dark':matchMedia('(prefers-color-scheme:dark)').matches};
 const paintTh=()=>{$('th').textContent=isDark()?'☀️':'🌙';$('th').title=isDark()?'切換為淺色':'切換為深色'};
@@ -329,7 +329,7 @@ async function loadAll(){const s=$('sync');
  catch(e){s.innerHTML=`<span style="color:var(--red)">●</span> BizForm 連線失敗：${esc(e.message)}`}
  try{const r=await fetch('/api/crm?refresh=1');const j=await r.json();if(!r.ok)throw new Error(j.error);CRMD=j;crm();s.innerHTML+=` ｜ <span style="color:var(--grn)">●</span> CRM 已連線`}catch(e){s.innerHTML+=` ｜ <span style="color:var(--red)">●</span> CRM：${esc(e.message)}`}}
 
-async function enter(){$('login').style.display='none';$('app').style.display='block';$('un').textContent=$('lu').value||'展示使用者';$('ur').textContent=$('lr').value;if(location.hash!=='#dash')location.hash='#dash';go();
+async function enter(){$('login').style.display='none';$('app').style.display='block';$('un').textContent=$('lu').value||'展示使用者';$('ur').textContent=$('lr').value;const lineUrl=String(CFG.lineFriendUrl||'').trim();const lineEntry=$('line-entry');if(lineEntry&&/^https:\/\/(lin\.ee|line\.me)\//i.test(lineUrl)){lineEntry.href=lineUrl;lineEntry.hidden=false}else if(lineEntry){lineEntry.hidden=true}if(location.hash!=='#dash')location.hash='#dash';go();
  $('feedL').innerHTML=[['handovers','交接總覽'],['projects','待移轉專案'],['customers','客戶窗口'],['risks','未結事項與風險']].map(([k,n])=>{const u=location.origin+'/feed/'+k+'.csv';return `<div class="mini"><span><b>${n}</b><br><small style="word-break:break-all">${u}</small></span><button class="btn sm gh" data-u="${u}">複製</button></div>`}).join('');
  $('feedL').onclick=e=>{const b=e.target.closest('button[data-u]');if(!b)return;const u=b.dataset.u,ok=()=>toast('已複製網址');try{navigator.clipboard.writeText(u).then(ok,()=>{prompt('請複製網址',u)})}catch(x){prompt('請複製網址',u)}};
  $('biA').href=CFG.powerbi;$('newA').href=CFG.formUrl;const qr=$('qr');qr.replaceChildren();try{new QRCode(qr,{text:CFG.formUrl,width:110,height:110})}catch(e){qr.textContent='QR'}

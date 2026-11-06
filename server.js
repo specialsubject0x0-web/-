@@ -111,10 +111,10 @@ async function weatherAnswer(q){
   return {source:'Open-Meteo',text:`### 🌤️ ${label}${offset?day:'目前'}天氣\n\n- **氣溫${offset?'範圍':'（模型估計）'}**：${temp}\n- **天氣**：${WEATHER_CODES[c]||'天氣代碼 '+c}${ap}\n- **最高降雨機率**：${j.daily.precipitation_probability_max[offset]}%\n\n**資料時間**：${offset?j.daily.time[offset]:j.current.time}（當地時間）\n\n_資料為該地區附近的天氣模型估計與預報，實際情況可能不同。_`};
  }catch(e){return {source:'即時天氣',text:'目前無法取得天氣資料，請稍後再試；我不會猜測即時氣溫。'};}
 }
-async function chat(q,sid){
+async function chat(q,sid,useCai=true){
  const list=(await load()).people;
  {const w=await weatherAnswer(q);if(w)return w;const s=smartChat(q,list);if(s)return s;if(handoverQuestion(q,list)){const l=await llm(q,list);if(l)return l;}else{const g=await generalAnswer(q,sid);if(g)return g;}}
- if(CFG.caiEndpoint){try{const r=await fetch(CFG.caiEndpoint,{method:'POST',headers:{'Content-Type':'application/json',...(E.CAI_API_KEY?{Authorization:'Bearer '+E.CAI_API_KEY}:{})},body:JSON.stringify({sessionId:sid,message:q,text:q})});
+ if(useCai&&CFG.caiEndpoint){try{const r=await fetch(CFG.caiEndpoint,{method:'POST',headers:{'Content-Type':'application/json',...(E.CAI_API_KEY?{Authorization:'Bearer '+E.CAI_API_KEY}:{})},body:JSON.stringify({sessionId:sid,message:q,text:q})});
   if(r.ok){const j=await r.json();const t=j.reply||j.text||j.answer||(j.messages&&j.messages.map(m=>m.text||'').join('\n'))||JSON.stringify(j);return {source:'C.ai',text:t};}}catch(e){}}
  return handoverQuestion(q,list)?{source:'BizForm 快查',text:localAnswer(q,list)}:{source:'交接小幫手',text:'一般問答服務暫時無法回覆，請稍後再試。若要取得即時網路資訊，請確認 Render 已設定 TAVILY_API_KEY。'};}
 // ---- 零相依 .xlsx 產生器（匯出交接明細）----
@@ -358,7 +358,7 @@ async function lineHandleEvent(ev){
  const q=String(ev.message.text||'').trim().slice(0,500);
  if(!q){await lineReply(ev.replyToken,'請輸入想查詢的交接問題。');return;}
  try{
-  const ans=await chat(q,'line:'+uid);
+  const ans=await chat(q,'line:'+uid,false);
   await lineReply(ev.replyToken,ans&&ans.text||'目前無法取得回答，請稍後再試。');
  }catch(err){
   console.error('LINE chat failed:',err&&err.message||err);

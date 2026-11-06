@@ -5,7 +5,7 @@ const E=process.env,MOCK=E.MOCK==='1';
 const CFG={base:(E.BIZFORM_BASE||'https://bizform.vitalyun.com').replace(/\/$/,''),depot:E.DEPOT_ID||'0891fc9e6a5146ee9adc53245f835cd2',formId:+(E.FORM_ID||14),
  formUrl:E.FORM_URL||'https://bizform.vitalyun.com/#/write/14?depotId=0891fc9e6a5146ee9adc53245f835cd2',
  powerbi:'https://reurl.cc/27d7mr',
- caiEmbed:E.CAI_EMBED_URL||'',caiEndpoint:E.CAI_CHAT_ENDPOINT||'',caiHome:'https://cai-innoserve.gss.com.tw',caiHost:(E.CAI_HOST||'https://cai-innoserve.gss.com.tw').replace(/\/$/,''),caiBot:E.CAI_BOT_ID||'handover_bot_003'};
+ caiEmbed:E.CAI_EMBED_URL||'',caiEndpoint:E.CAI_CHAT_ENDPOINT||'',caiHome:'https://cai-innoserve.gss.com.tw',caiHost:(E.CAI_HOST||'https://cai-innoserve.gss.com.tw').replace(/\/$/,''),caiBot:E.CAI_BOT_ID||'handover_bot_003',lineFriendUrl:E.LINE_OA_URL||''};
 const PASS=E.SITE_PASSCODE||'',SECRET=crypto.randomBytes(16).toString('hex');
 const tok=()=>crypto.createHmac('sha256',SECRET).update('ok').digest('hex');
 const H={'x-api-key':E.BIZFORM_API_KEY||'',depotId:CFG.depot,'Content-Type':'application/json'};
@@ -390,7 +390,7 @@ http.createServer(async(req,res)=>{
  try{const u=new URL(req.url,'http://x');
   if(u.pathname==='/webhook/line'&&req.method==='POST')return lineWebhook(req,res);
   if(u.pathname==='/api/login'&&req.method==='POST'){const b=await body(req);if(!PASS||b.code===PASS){res.writeHead(200,{'Content-Type':'application/json','Set-Cookie':'hs='+tok()+'; HttpOnly; SameSite=Lax; Path=/; Max-Age=86400'});return res.end('{"ok":true}');}return send(res,401,{error:'存取碼錯誤'});}
-  if(u.pathname==='/api/config')return send(res,200,{needLogin:!!PASS&&!authed(req),formUrl:CFG.formUrl,powerbi:CFG.powerbi,caiEmbed:CFG.caiEmbed,caiHost:CFG.caiHost,caiBot:CFG.caiBot,caiHome:CFG.caiHome,mock:MOCK,notify:notifyInfo()});
+  if(u.pathname==='/api/config')return send(res,200,{needLogin:!!PASS&&!authed(req),formUrl:CFG.formUrl,powerbi:CFG.powerbi,caiEmbed:CFG.caiEmbed,caiHost:CFG.caiHost,caiBot:CFG.caiBot,caiHome:CFG.caiHome,lineFriendUrl:CFG.lineFriendUrl,mock:MOCK,notify:notifyInfo()});
   if(u.pathname==='/api/assistant/status')return send(res,200,{generalAI:!!E.ANTHROPIC_API_KEY,webSearch:!!(E.TAVILY_API_KEY||E.SEARCH_API_KEY)});
   if(u.pathname.startsWith('/api/')&&!authed(req))return send(res,401,{error:'請先登入'});
   if(u.pathname.startsWith('/feed/')){try{
